@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/url"
 
@@ -10,12 +13,15 @@ import (
 
 func main() {
 	url := url.URL{
-		Scheme: "ws",
-		Host:   "localhost:8080",
+		Scheme: "wss",
+		Host:   "localhost:8443",
 		Path:   "/",
 	}
 
-	conn, _, err := websocket.DefaultDialer.Dial(url.String(), nil)
+	dialer := websocket.DefaultDialer
+	dialer.TLSClientConfig = tlsConfig()
+
+	conn, _, err := dialer.Dial(url.String(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,5 +35,19 @@ func main() {
 		}
 
 		fmt.Println(string(message))
+	}
+}
+
+func tlsConfig() *tls.Config {
+	cert, err := ioutil.ReadFile("cert/public.crt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(cert)
+
+	return &tls.Config{
+		RootCAs: certPool,
 	}
 }

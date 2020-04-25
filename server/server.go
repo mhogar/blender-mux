@@ -34,5 +34,5 @@ func writeMessage(conn *websocket.Conn, message string) {
 
 func main() {
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServeTLS(":8443", "cert/public.crt", "cert/private.key", nil)
 }
