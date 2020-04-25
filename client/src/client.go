@@ -39,7 +39,7 @@ func main() {
 }
 
 func tlsConfig() *tls.Config {
-	cert, err := ioutil.ReadFile("cert/public.crt")
+	cert, err := ioutil.ReadFile("server/cert/public.crt")
 	if err != nil {
 		log.Fatal(err)
 	}

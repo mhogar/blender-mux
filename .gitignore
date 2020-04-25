@@ -1,2 +1,2 @@
-cert/*
-!cert/.gitkeep
+*.key
+*.crt
