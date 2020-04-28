@@ -1,6 +1,8 @@
 package main
 
 import (
+	"app/common"
+
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
@@ -35,11 +37,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	go readLoop(conn)
 
 	//send the messages
-	writeMessage(conn, "Hello client!")
-	time.Sleep(time.Second * 1)
-	writeMessage(conn, "Hello again!")
-	time.Sleep(time.Second * 1)
-	writeMessage(conn, "Goodbye!")
+	sendRequest(conn, common.RENDER, "This is a render message")
 
 	//send a close message
 	conn.WriteControl(websocket.CloseMessage, nil, time.Now().Add(time.Second))
@@ -53,6 +51,20 @@ func readLoop(conn *websocket.Conn) {
 			conn.Close()
 			break
 		}
+	}
+}
+
+func sendRequest(conn *websocket.Conn, requestType byte, message string) {
+	length := len(message) + 1
+
+	data := make([]byte, length, length)
+	data[0] = requestType
+	copy(data[1:length], []byte(message))
+
+	err := conn.WriteMessage(websocket.BinaryMessage, data)
+	if err != nil {
+		log.Println(err)
+		return
 	}
 }
 

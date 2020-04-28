@@ -1,17 +1,23 @@
 package main
 
 import (
+	"app/common"
+
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 
 	"github.com/gorilla/websocket"
 )
 
 func main() {
+	fmt.Sprintln("%q", "Hello world")
+
 	url := url.URL{
 		Scheme: "wss",
 		Host:   "localhost:8443",
@@ -29,16 +35,7 @@ func main() {
 	}
 
 	defer conn.Close()
-
-	//main read loop: recieve messages and print them
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-
-		fmt.Println(string(message))
-	}
+	readLoop(conn)
 }
 
 func tlsConfig() *tls.Config {
@@ -61,5 +58,23 @@ func tlsConfig() *tls.Config {
 	return &tls.Config{
 		RootCAs:      certPool,
 		Certificates: []tls.Certificate{clientCert},
+	}
+}
+
+func readLoop(conn *websocket.Conn) {
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		messageType := message[0]
+		switch messageType {
+		case common.RENDER:
+			s := fmt.Sprintln(string(message[1:len(message)]))
+			io.WriteString(os.Stdout, s)
+		default:
+			fmt.Sprintln("Message type not recognized: ", messageType)
+		}
 	}
 }
