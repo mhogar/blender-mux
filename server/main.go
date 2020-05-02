@@ -1,10 +1,7 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -20,8 +17,7 @@ func main() {
 
 	//create the server
 	server := &http.Server{
-		Addr: ":8443",
-		//TLSConfig: tlsConfig(),
+		Addr:    ":8443",
 		Handler: router,
 	}
 
@@ -41,21 +37,4 @@ func configureRoutes(resolver *dependencies.DependencyResolver) *httprouter.Rout
 	router.POST("/login", sessionCon.PostLogin)
 
 	return router
-}
-
-func tlsConfig() *tls.Config {
-	//load the client's certificate
-	cert, err := ioutil.ReadFile("render_client/cert/public.crt")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//create a certificate pool and add the client's to it
-	certPool := x509.NewCertPool()
-	certPool.AppendCertsFromPEM(cert)
-
-	return &tls.Config{
-		ClientCAs:  certPool,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-	}
 }
