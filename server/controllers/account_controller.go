@@ -32,7 +32,14 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	//TODO: validate email is unique and password meets criteria
+	//validate email is unique
+	otherUser := con.GetUserByEmail(body.Email)
+	if otherUser != nil {
+		sendResponse(w, errorResponse{false, "an account with that email already exists"})
+		return
+	}
+
+	//TODO: validate email form and password meets criteria
 
 	//hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
