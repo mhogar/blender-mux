@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type basicResponse struct {
@@ -45,4 +47,18 @@ func sendResponse(w http.ResponseWriter, res interface{}) error {
 	}
 
 	return nil
+}
+
+func getUserSession(req *http.Request) (uuid.UUID, error) {
+	c, err := req.Cookie("session")
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	sID, err := uuid.Parse(c.Value)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return sID, nil
 }

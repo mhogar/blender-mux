@@ -7,8 +7,8 @@ import (
 	"github.com/blendermux/server/dependencies"
 	"github.com/blendermux/server/models"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,7 +32,7 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	//TODO: validate the input
+	//TODO: validate email is unique and password meets criteria
 
 	//hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
@@ -45,7 +45,7 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 
 	//save the user
 	con.CreateUser(&models.User{
-		primitive.NewObjectID(),
+		uuid.New(),
 		body.Email,
 		hash,
 	})

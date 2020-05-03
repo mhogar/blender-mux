@@ -30,11 +30,17 @@ func main() {
 func configureRoutes(resolver *dependencies.DependencyResolver) *httprouter.Router {
 	router := httprouter.New()
 
-	accountCon := controllers.AccountController{resolver.UserCRUD}
+	accountCon := controllers.AccountController{
+		resolver.Database,
+	}
 	router.POST("/account", accountCon.PostAccount)
 
-	sessionCon := controllers.SessionController{resolver.UserCRUD}
+	sessionCon := controllers.SessionController{
+		resolver.Database,
+		resolver.Database,
+	}
 	router.POST("/login", sessionCon.PostLogin)
+	router.POST("/logout", sessionCon.PostLogout)
 
 	return router
 }

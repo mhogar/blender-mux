@@ -1,17 +1,13 @@
 package dependencies
 
-import "github.com/blendermux/server/database"
+import "github.com/blendermux/server/database/in_memory_db"
 
 type DependencyResolver struct {
 	Database
-	UserCRUD
 }
 
 func InitDependencyResolver() *DependencyResolver {
-	db := database.InitInMemoryDB()
-
 	return &DependencyResolver{
-		db,
-		db,
+		inmemorydb.InitInMemoryDB(),
 	}
 }

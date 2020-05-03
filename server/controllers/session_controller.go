@@ -5,13 +5,16 @@ import (
 	"net/http"
 
 	"github.com/blendermux/server/dependencies"
+	"github.com/blendermux/server/models"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type SessionController struct {
 	dependencies.UserCRUD
+	dependencies.SessionCRUD
 }
 
 //PostLogin handles Post requests to "/login"
@@ -40,12 +43,56 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 	//validate the password
 	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(body.Password))
 	if err != nil {
-		log.Println(err)
 		sendResponse(w, errorResponse{false, "Invalid email and/or password"})
 		return
 	}
 
+	//generate a seesion cookie
+	sID := uuid.New()
+	c := &http.Cookie{
+		Name:  "session",
+		Value: sID.String(),
+	}
+	http.SetCookie(w, c)
+
+	//add session to db
+	con.CreateSession(&models.Session{
+		sID,
+		user.ID,
+	})
+
 	//return success
-	//TODO: gernerate and return session token
+	sendResponse(w, basicResponse{true})
+}
+
+//PostLogout handles Post requests to "/logout"
+func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//get the session
+	sID, err := getUserSession(req)
+	if err != nil {
+		sendResponse(w, errorResponse{false, "user session is invalid"})
+		return
+	}
+
+	//validate sID
+	session := con.GetSessionByID(sID)
+	if session == nil {
+		log.Println("no session found in db with id", sID.String())
+		sendResponse(w, errorResponse{false, "user session is invalid"})
+		return
+	}
+
+	//delete session from db
+	con.DeleteSession(session)
+
+	//remove the cookie
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  "",
+		MaxAge: -1,
+	}
+	http.SetCookie(w, c)
+
+	//return success
 	sendResponse(w, basicResponse{true})
 }
