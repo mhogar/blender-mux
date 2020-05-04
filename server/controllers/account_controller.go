@@ -32,14 +32,20 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	//validate email
+	emailValid := models.ValidateEmail(body.Email)
+	if !emailValid {
+		sendResponse(w, errorResponse{false, "email is not valid"})
+	}
+
+	//TODO: validate password meets criteria
+
 	//validate email is unique
 	otherUser := con.GetUserByEmail(body.Email)
 	if otherUser != nil {
 		sendResponse(w, errorResponse{false, "an account with that email already exists"})
 		return
 	}
-
-	//TODO: validate email form and password meets criteria
 
 	//hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
@@ -51,11 +57,14 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//save the user
-	con.CreateUser(&models.User{
+	err = con.CreateUser(&models.User{
 		uuid.New(),
 		body.Email,
 		hash,
 	})
+	if err != nil {
+		//TODO: handle error
+	}
 
 	//return success
 	sendResponse(w, basicResponse{true})

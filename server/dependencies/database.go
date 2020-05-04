@@ -11,7 +11,7 @@ type Database interface {
 }
 
 type UserCRUD interface {
-	CreateUser(user *models.User)
+	CreateUser(user *models.User) error
 	GetUserByEmail(email string) *models.User
 }
 

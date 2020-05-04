@@ -7,6 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
+func ValidateEmail(email string) bool {
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
+	return matched
+}
+
 type User struct {
 	ID           uuid.UUID
 	Email        string
@@ -24,8 +29,7 @@ func (u *User) Validate() *ValidateError {
 		return &ValidateError{UserInvalidID, errors.New("id cannot be nil")}
 	}
 
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, u.Email)
-	if !matched {
+	if !ValidateEmail(u.Email) {
 		return &ValidateError{UserInvalidEmail, errors.New("email is in invalid format")}
 	}
 

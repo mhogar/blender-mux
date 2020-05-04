@@ -4,8 +4,14 @@ import (
 	"github.com/blendermux/server/models"
 )
 
-func (db InMemoryDB) CreateUser(user *models.User) {
+func (db InMemoryDB) CreateUser(user *models.User) error {
+	err := user.Validate()
+	if err != nil {
+		return err
+	}
+
 	db.Users[user.ID] = user
+	return nil
 }
 
 func (db InMemoryDB) GetUserByEmail(email string) *models.User {
