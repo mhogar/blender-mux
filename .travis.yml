@@ -1,0 +1,17 @@
+language: go
+os: linux
+
+jobs:
+  include:
+    - stage: Build
+      before_install:
+        - cd server
+      install: skip
+      script: 
+        - go build
+    - stage: Test
+      before_install:
+        - cd server
+      install: skip
+      script:
+        - go test ./... -v -cover
