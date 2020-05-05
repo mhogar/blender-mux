@@ -1,0 +1,21 @@
+language: go
+os: linux
+env:
+  - GO111MODULE=on
+
+jobs:
+  include:
+    - stage: Build
+      name: Build Server
+      before_install:
+        - cd server
+      install: skip
+      script: 
+        - go build
+    - stage: Test
+      name: Server Tests
+      before_install:
+        - cd server
+      install: skip
+      script:
+        - go test ./... -v -cover
