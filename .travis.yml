@@ -6,14 +6,14 @@ env:
 jobs:
   include:
     - stage: Build
-      name: Server
+      name: Build Server
       before_install:
         - cd server
       install: skip
       script: 
         - go build
     - stage: Test
-      name: Server
+      name: Server Tests
       before_install:
         - cd server
       install: skip
