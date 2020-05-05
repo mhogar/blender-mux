@@ -1,5 +1,7 @@
 language: go
 os: linux
+env:
+  - GO111MODULE=on
 
 jobs:
   include:
@@ -9,11 +11,11 @@ jobs:
         - cd server
       install: skip
       script: 
-        - env GO111MODULE=on go build
+        - go build
     - stage: Test
       name: Server
       before_install:
         - cd server
       install: skip
       script:
-        - env GO111MODULE=on go test ./... -v -cover
+        - go test ./... -v -cover
