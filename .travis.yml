@@ -5,11 +5,15 @@ jobs:
   include:
     - stage: Build
       name: Server
+      before_install:
+        - cd server
       install: skip
       script: 
-        - go build server/main.go
+        - env GO111MODULE=on go build
     - stage: Test
       name: Server
+      before_install:
+        - cd server
       install: skip
       script:
-        - go test ./server/... -v -cover
+        - env GO111MODULE=on go test ./... -v -cover
