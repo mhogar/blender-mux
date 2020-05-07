@@ -7,6 +7,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/stretchr/testify v1.5.1
-	go.mongodb.org/mongo-driver v1.3.2
+	go.mongodb.org/mongo-driver v1.3.3
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 )
