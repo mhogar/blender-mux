@@ -12,6 +12,13 @@ jobs:
       install: skip
       script: 
         - go build
+    - stage: Build
+      name: Build Migration Runner
+      before_install:
+        - cd server/database/migration_runner
+      install: skip
+      script: 
+        - go build
     - stage: Test
       name: Server Tests
       before_install:

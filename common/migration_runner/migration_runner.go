@@ -15,7 +15,7 @@ type MigrationRepository interface {
 }
 
 type MigrationCRUD interface {
-	CreateNewMigration(timestamp string) error
+	CreateMigration(timestamp string) error
 	GetLatestTimestamp() (string, error)
 }
 
@@ -49,7 +49,7 @@ func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) {
 			}
 
 			//save the migration to db to mark it as run
-			err = db.CreateNewMigration(timestamp)
+			err = db.CreateMigration(timestamp)
 			if err != nil {
 				log.Fatal("Error saving migration:", err)
 			}

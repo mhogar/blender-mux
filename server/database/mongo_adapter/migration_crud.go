@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (db MongoAdapter) CreateNewMigration(timestamp string) error {
+func (db MongoAdapter) CreateMigration(timestamp string) error {
 	//insert the migration
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
