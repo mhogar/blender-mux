@@ -1,4 +1,4 @@
-package dependencies
+package database
 
 import (
 	"github.com/blendermux/server/models"
@@ -6,8 +6,16 @@ import (
 )
 
 type Database interface {
-	UserCRUD
-	SessionCRUD
+	MigrationCRUD
+	//UserCRUD
+	//SessionCRUD
+	Destroy() error
+	Ping() error
+}
+
+type MigrationCRUD interface {
+	CreateNewMigration(migration *models.Migration) error
+	GetLatestTimestamp() (string, error)
 }
 
 type UserCRUD interface {

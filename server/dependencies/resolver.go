@@ -1,13 +1,44 @@
 package dependencies
 
-import "github.com/blendermux/server/database/in_memory_db"
+import (
+	"errors"
+	"log"
+
+	mongomigrations "github.com/blendermux/server/database/migration/mongo_migrations"
+
+	"github.com/blendermux/server/database/migration"
+
+	"github.com/blendermux/server/database"
+	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
+)
 
 type DependencyResolver struct {
-	Database
+	database.Database
+	migration.MigrationRepository
 }
 
-func InitDependencyResolver() *DependencyResolver {
-	return &DependencyResolver{
-		inmemorydb.InitInMemoryDB(),
+func CreateDependencyResolver() *DependencyResolver {
+	//init database dependency
+	database := mongoadapter.MongoAdapter{}
+	err := database.Initialize()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	//init migration repository dependency
+	migrationRepo := mongomigrations.MongoMigrationRepository{database}
+
+	return &DependencyResolver{
+		database,
+		migrationRepo,
+	}
+}
+
+func (resolver DependencyResolver) DestroyDependencies() error {
+	err := resolver.Database.Destroy()
+	if err != nil {
+		return errors.New("Error destorying database dependency: " + err.Error())
+	}
+
+	return nil
 }

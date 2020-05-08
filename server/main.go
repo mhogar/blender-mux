@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	resolver := dependencies.InitDependencyResolver()
+	resolver := dependencies.CreateDependencyResolver()
 	router := configureRoutes(resolver)
 
 	//create the server

@@ -8,3 +8,10 @@ type Migration struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	Timestamp string             `bson:"timestamp"`
 }
+
+func CreateNewMigration(timestamp string) *Migration {
+	return &Migration{
+		primitive.NewObjectID(),
+		timestamp,
+	}
+}
