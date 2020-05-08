@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	migrationrunner "github.com/blendermux/common/migration_runner"
 	"github.com/blendermux/server/dependencies"
 )
 
@@ -18,5 +19,5 @@ func main() {
 		log.Fatal("Could not connect to database: ", err)
 	}
 
-	RunMigrations(resolver.MigrationRepository, db)
+	migrationrunner.RunMigrations(resolver.MigrationRepository, db)
 }

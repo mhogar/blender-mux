@@ -1,14 +1,25 @@
-package main
+package migrationrunner
 
 import (
 	"log"
-
-	"github.com/blendermux/server/database"
-	"github.com/blendermux/server/database/migration"
-	"github.com/blendermux/server/models"
 )
 
-func RunMigrations(migrationRepo migration.MigrationRepository, db database.MigrationCRUD) {
+type Migration interface {
+	GetTimestamp() string
+	Up() error
+	Down() error
+}
+
+type MigrationRepository interface {
+	GetMigrations() []Migration
+}
+
+type MigrationCRUD interface {
+	CreateNewMigration(timestamp string) error
+	GetLatestTimestamp() (string, error)
+}
+
+func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) {
 	//load the migrations
 	migrations := migrationRepo.GetMigrations()
 
@@ -38,7 +49,7 @@ func RunMigrations(migrationRepo migration.MigrationRepository, db database.Migr
 			}
 
 			//save the migration to db to mark it as run
-			err = db.CreateNewMigration(models.CreateNewMigration(migration.GetTimestamp()))
+			err = db.CreateNewMigration(timestamp)
 			if err != nil {
 				log.Fatal("Error saving migration:", err)
 			}

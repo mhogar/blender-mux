@@ -9,10 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (db MongoAdapter) CreateNewMigration(migration *models.Migration) error {
+func (db MongoAdapter) CreateNewMigration(timestamp string) error {
 	//insert the migration
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
+
+	//create a migration to save
+	migration := models.CreateNewMigration(timestamp)
 
 	_, err := db.Migrations.InsertOne(ctx, migration)
 	if err != nil {

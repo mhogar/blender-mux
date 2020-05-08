@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log"
 
-	mongomigrations "github.com/blendermux/server/database/migration/mongo_migrations"
+	mongomigrations "github.com/blendermux/server/database/migrations/mongo_migrations"
 
-	"github.com/blendermux/server/database/migration"
+	migrationrunner "github.com/blendermux/common/migration_runner"
 
 	"github.com/blendermux/server/database"
 	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
@@ -14,7 +14,7 @@ import (
 
 type DependencyResolver struct {
 	database.Database
-	migration.MigrationRepository
+	migrationrunner.MigrationRepository
 }
 
 func CreateDependencyResolver() *DependencyResolver {

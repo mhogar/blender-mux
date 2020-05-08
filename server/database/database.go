@@ -1,21 +1,17 @@
 package database
 
 import (
+	migrationrunner "github.com/blendermux/common/migration_runner"
 	"github.com/blendermux/server/models"
 	"github.com/google/uuid"
 )
 
 type Database interface {
-	MigrationCRUD
+	migrationrunner.MigrationCRUD
 	//UserCRUD
 	//SessionCRUD
 	Destroy() error
 	Ping() error
-}
-
-type MigrationCRUD interface {
-	CreateNewMigration(migration *models.Migration) error
-	GetLatestTimestamp() (string, error)
 }
 
 type UserCRUD interface {
