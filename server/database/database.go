@@ -8,19 +8,19 @@ import (
 
 type Database interface {
 	migrationrunner.MigrationCRUD
-	//UserCRUD
-	//SessionCRUD
+	UserCRUD
+	SessionCRUD
 	Destroy() error
 	Ping() error
 }
 
 type UserCRUD interface {
 	CreateUser(user *models.User) error
-	GetUserByEmail(email string) *models.User
+	GetUserByEmail(email string) (*models.User, error)
 }
 
 type SessionCRUD interface {
-	CreateSession(session *models.Session)
-	GetSessionByID(id uuid.UUID) *models.Session
-	DeleteSession(session *models.Session)
+	CreateSession(session *models.Session) error
+	GetSessionByID(id uuid.UUID) (*models.Session, error)
+	DeleteSession(session *models.Session) error
 }

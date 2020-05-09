@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/dependencies"
+	"github.com/blendermux/server/database"
 	"github.com/blendermux/server/models"
 
 	"github.com/google/uuid"
@@ -13,7 +13,7 @@ import (
 )
 
 type AccountController struct {
-	dependencies.UserCRUD
+	database.UserCRUD
 }
 
 // PostAccount handles Post requests to "/account"
@@ -41,7 +41,7 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	//TODO: validate password meets criteria
 
 	//validate email is unique
-	otherUser := con.GetUserByEmail(body.Email)
+	otherUser, _ := con.GetUserByEmail(body.Email)
 	if otherUser != nil {
 		sendResponse(w, errorResponse{false, "an account with that email already exists"})
 		return

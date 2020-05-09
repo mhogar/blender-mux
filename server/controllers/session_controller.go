@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/dependencies"
+	"github.com/blendermux/server/database"
 	"github.com/blendermux/server/models"
 
 	"github.com/google/uuid"
@@ -13,8 +13,8 @@ import (
 )
 
 type SessionController struct {
-	dependencies.UserCRUD
-	dependencies.SessionCRUD
+	database.UserCRUD
+	database.SessionCRUD
 }
 
 //PostLogin handles Post requests to "/login"
@@ -34,7 +34,7 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 	}
 
 	//get the user
-	user := con.GetUserByEmail(body.Email)
+	user, _ := con.GetUserByEmail(body.Email)
 	if user == nil {
 		sendResponse(w, errorResponse{false, "Invalid email and/or password"})
 		return
@@ -75,7 +75,7 @@ func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request
 	}
 
 	//validate sID
-	session := con.GetSessionByID(sID)
+	session, _ := con.GetSessionByID(sID)
 	if session == nil {
 		log.Println("no session found in db with id", sID.String())
 		sendResponse(w, errorResponse{false, "user session is invalid"})
