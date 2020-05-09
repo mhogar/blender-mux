@@ -7,7 +7,6 @@ import (
 	"github.com/blendermux/server/database"
 	"github.com/blendermux/server/models"
 
-	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -33,7 +32,7 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//validate email
-	emailValid := models.ValidateEmail(body.Email)
+	emailValid := models.ValidateUserEmail(body.Email)
 	if !emailValid {
 		sendResponse(w, errorResponse{false, "email is not valid"})
 	}
@@ -57,11 +56,8 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//save the user
-	err = con.CreateUser(&models.User{
-		uuid.New(),
-		body.Email,
-		hash,
-	})
+	user := models.CreateNewUser(body.Email, hash)
+	err = con.CreateUser(user)
 	if err != nil {
 		//TODO: handle error
 	}

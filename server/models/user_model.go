@@ -4,38 +4,40 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func ValidateEmail(email string) bool {
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
-	return matched
-}
-
 type User struct {
-	ID           uuid.UUID
+	ID           primitive.ObjectID
 	Email        string
 	PasswordHash []byte
 }
 
-const (
-	UserInvalidID           = iota
-	UserInvalidEmail        = iota
-	UserInvalidPasswordHash = iota
-)
+func CreateNewUser(email string, passwordHash []byte) *User {
+	return &User{
+		primitive.NewObjectID(),
+		email,
+		passwordHash,
+	}
+}
 
-func (u *User) Validate() *ValidateError {
-	if u.ID == uuid.Nil {
-		return &ValidateError{UserInvalidID, errors.New("id cannot be nil")}
+func ValidateUserEmail(email string) bool {
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
+	return matched
+}
+
+func (u User) Validate() ValidateError {
+	if u.ID == primitive.NilObjectID {
+		return ValidateError{UserInvalidID, errors.New("id cannot be nil")}
 	}
 
-	if !ValidateEmail(u.Email) {
-		return &ValidateError{UserInvalidEmail, errors.New("email is in invalid format")}
+	if !ValidateUserEmail(u.Email) {
+		return ValidateError{UserInvalidEmail, errors.New("email is in invalid format")}
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return &ValidateError{UserInvalidPasswordHash, errors.New("password hash cannot be null")}
+		return ValidateError{UserInvalidPasswordHash, errors.New("password hash cannot be nil")}
 	}
 
-	return nil
+	return GetModelValidValidateError()
 }

@@ -56,10 +56,8 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 	http.SetCookie(w, c)
 
 	//add session to db
-	con.CreateSession(&models.Session{
-		sID,
-		user.ID,
-	})
+	session := models.CreateNewSession(sID, user.ID)
+	con.CreateSession(session)
 
 	//return success
 	sendResponse(w, basicResponse{true})
@@ -75,7 +73,7 @@ func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request
 	}
 
 	//validate sID
-	session, _ := con.GetSessionByID(sID)
+	session, _ := con.GetSessionByToken(sID)
 	if session == nil {
 		log.Println("no session found in db with id", sID.String())
 		sendResponse(w, errorResponse{false, "user session is invalid"})

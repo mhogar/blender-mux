@@ -8,13 +8,18 @@ import (
 )
 
 func (db MongoAdapter) CreateSession(session *models.Session) error {
-	return errors.New("Not implemented yet.")
+	verr := session.Validate()
+	if verr.Status != models.ModelValid {
+		return errors.New("error validating session model: " + verr.Error())
+	}
+
+	return errors.New("not implemented yet")
 }
 
-func (db MongoAdapter) GetSessionByID(id uuid.UUID) (*models.Session, error) {
-	return nil, errors.New("Not implemented yet.")
+func (db MongoAdapter) GetSessionByToken(token uuid.UUID) (*models.Session, error) {
+	return nil, errors.New("not implemented yet")
 }
 
 func (db MongoAdapter) DeleteSession(session *models.Session) error {
-	return errors.New("Not implemented yet.")
+	return errors.New("not implemented yet")
 }

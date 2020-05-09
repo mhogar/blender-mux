@@ -21,6 +21,6 @@ type UserCRUD interface {
 
 type SessionCRUD interface {
 	CreateSession(session *models.Session) error
-	GetSessionByID(id uuid.UUID) (*models.Session, error)
+	GetSessionByToken(token uuid.UUID) (*models.Session, error)
 	DeleteSession(session *models.Session) error
 }

@@ -2,6 +2,7 @@ package mongoadapter
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/blendermux/server/models"
@@ -10,16 +11,20 @@ import (
 )
 
 func (db MongoAdapter) CreateMigration(timestamp string) error {
+	//validate timestamp and create the migration to save
+	verr := models.ValidateMigrationTimestamp(timestamp)
+	if verr.Status != models.ModelValid {
+		return errors.New("error validating migration timestamp" + verr.Error())
+	}
+	migration := models.CreateNewMigration(timestamp)
+
 	//insert the migration
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	//create a migration to save
-	migration := models.CreateNewMigration(timestamp)
-
 	_, err := db.Migrations.InsertOne(ctx, migration)
 	if err != nil {
-		return err
+		return errors.New("error inserting migration: " + err.Error())
 	}
 
 	return nil

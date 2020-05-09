@@ -3,9 +3,10 @@ package models_test
 import (
 	"testing"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/blendermux/server/models"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -15,34 +16,47 @@ type UserTestSuite struct {
 }
 
 func (suite *UserTestSuite) SetupTest() {
-	suite.User = &models.User{
-		uuid.New(),
+	suite.User = models.CreateNewUser(
 		"email@email.com",
 		[]byte("password"),
-	}
+	)
 }
 
-func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsNilError() {
-	//act
-	err := suite.User.Validate()
-
-	//assert
-	suite.Nil(err)
-}
-
-func (suite *UserTestSuite) TestValidate_WithNullUserID_ReturnsError() {
+func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 	//arrange
-	suite.User.ID = uuid.Nil
+	email := "this is a test email"
+	hash := []byte("this is a password")
+
+	//act
+	user := models.CreateNewUser(email, hash)
+
+	//assert
+	suite.Require().NotNil(user)
+	suite.NotEqual(user.ID, primitive.NilObjectID)
+	suite.Equal(user.Email, email)
+	suite.Equal(user.PasswordHash, hash)
+}
+
+func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
+	//act
+	err := suite.User.Validate()
+
+	//assert
+	suite.Equal(err.Status, models.ModelValid)
+}
+
+func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
+	//arrange
+	suite.User.ID = primitive.NilObjectID
 
 	//act
 	err := suite.User.Validate()
 
 	//assert
-	suite.Require().NotNil(err)
 	suite.Equal(err.Status, models.UserInvalidID)
 }
 
-func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError() {
+func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsUserInvalidEmail() {
 	var email string
 	testCase := func() {
 		//arrange
@@ -52,7 +66,6 @@ func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError()
 		err := suite.User.Validate()
 
 		//assert
-		suite.Require().NotNil(err)
 		suite.Equal(err.Status, models.UserInvalidEmail)
 	}
 
@@ -78,7 +91,7 @@ func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError()
 	suite.Run("TopLevelDomainTooShort", testCase)
 }
 
-func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsError() {
+func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvalidPasswordHash() {
 	//arrange
 	suite.User.PasswordHash = make([]byte, 0)
 
@@ -86,7 +99,6 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsError() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.Require().NotNil(err)
 	suite.Equal(err.Status, models.UserInvalidPasswordHash)
 }
 
