@@ -1,6 +1,7 @@
 package common
 
-//message types
-const (
-	RENDER byte = iota
-)
+import "errors"
+
+func ChainError(message string, err error) error {
+	return errors.New(message + ": " + err.Error())
+}

@@ -2,9 +2,9 @@ package mongoadapter
 
 import (
 	"context"
-	"errors"
 	"time"
 
+	"github.com/blendermux/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -41,7 +41,7 @@ func (db MongoAdapter) Destroy() error {
 
 	err := db.Client.Disconnect(ctx)
 	if err != nil {
-		return errors.New("Error disconnecting from database: " + err.Error())
+		return common.ChainError("error disconnecting from database", err)
 	}
 
 	return nil
@@ -53,7 +53,7 @@ func (db MongoAdapter) Ping() error {
 
 	err := db.Client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		return errors.New("Error pinging database: " + err.Error())
+		return common.ChainError("error pinging database", err)
 	}
 
 	return nil

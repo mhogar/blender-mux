@@ -9,7 +9,7 @@ import (
 func (db MongoAdapter) CreateUser(user *models.User) error {
 	verr := user.Validate()
 	if verr.Status != models.ModelValid {
-		return errors.New("error validating user model: " + verr.Error())
+		return common.ChainError("error validating user model", verr)
 	}
 
 	return errors.New("not implemented yet")

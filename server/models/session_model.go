@@ -20,5 +20,5 @@ func CreateNewSession(token uuid.UUID, userID primitive.ObjectID) *Session {
 }
 
 func (s Session) Validate() ValidateError {
-	return GetModelValidValidateError()
+	return CreateModelValidValidateError()
 }

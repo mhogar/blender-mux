@@ -1,9 +1,9 @@
 package dependencies
 
 import (
-	"errors"
 	"log"
 
+	"github.com/blendermux/common"
 	mongomigrations "github.com/blendermux/server/database/migrations/mongo_migrations"
 
 	migrationrunner "github.com/blendermux/common/migration_runner"
@@ -37,7 +37,7 @@ func CreateDependencyResolver() *DependencyResolver {
 func (resolver DependencyResolver) DestroyDependencies() error {
 	err := resolver.Database.Destroy()
 	if err != nil {
-		return errors.New("Error destorying database dependency: " + err.Error())
+		return common.ChainError("error destorying database dependency", verr)
 	}
 
 	return nil

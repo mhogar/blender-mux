@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,23 +20,28 @@ func CreateNewUser(email string, passwordHash []byte) *User {
 	}
 }
 
-func ValidateUserEmail(email string) bool {
+func ValidateUserEmail(email string) ValidateError {
 	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
-	return matched
+	if !matched {
+		return CreateValidateError(UserInvalidEmail, "email is in invalid format")
+	}
+
+	return CreateModelValidValidateError()
 }
 
 func (u User) Validate() ValidateError {
 	if u.ID == primitive.NilObjectID {
-		return ValidateError{UserInvalidID, errors.New("id cannot be nil")}
+		return CreateValidateError(UserInvalidID, "id cannot be nil")
 	}
 
-	if !ValidateUserEmail(u.Email) {
-		return ValidateError{UserInvalidEmail, errors.New("email is in invalid format")}
+	err := ValidateUserEmail(u.Email)
+	if err.Status != ModelValid {
+		return err
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return ValidateError{UserInvalidPasswordHash, errors.New("password hash cannot be nil")}
+		return CreateValidateError(UserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return GetModelValidValidateError()
+	return CreateModelValidValidateError()
 }

@@ -32,8 +32,9 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//validate email
-	emailValid := models.ValidateUserEmail(body.Email)
-	if !emailValid {
+	verr := models.ValidateUserEmail(body.Email)
+	if verr.Status != models.ModelValid {
+		log.Println(verr)
 		sendResponse(w, errorResponse{false, "email is not valid"})
 	}
 

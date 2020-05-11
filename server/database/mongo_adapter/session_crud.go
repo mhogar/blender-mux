@@ -3,6 +3,7 @@ package mongoadapter
 import (
 	"errors"
 
+	"github.com/blendermux/common"
 	"github.com/blendermux/server/models"
 	"github.com/google/uuid"
 )
@@ -10,7 +11,7 @@ import (
 func (db MongoAdapter) CreateSession(session *models.Session) error {
 	verr := session.Validate()
 	if verr.Status != models.ModelValid {
-		return errors.New("error validating session model: " + verr.Error())
+		return common.ChainError("error validating session model", verr)
 	}
 
 	return errors.New("not implemented yet")

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,15 +21,15 @@ func CreateNewMigration(timestamp string) *Migration {
 func ValidateMigrationTimestamp(timestamp string) ValidateError {
 	matched, _ := regexp.MatchString(`^\d{14}$`, timestamp)
 	if !matched {
-		return ValidateError{MigrationInvalidTimestamp, errors.New("timestamp is in invalid format")}
+		return CreateValidateError(MigrationInvalidTimestamp, "timestamp is in invalid format")
 	}
 
-	return GetModelValidValidateError()
+	return CreateModelValidValidateError()
 }
 
 func (m Migration) Validate() ValidateError {
 	if m.ID == primitive.NilObjectID {
-		return ValidateError{MigrationInvalidID, errors.New("id cannot be nil")}
+		return CreateValidateError(MigrationInvalidID, "id cannot be nil")
 	}
 
 	err := ValidateMigrationTimestamp(m.Timestamp)
@@ -38,5 +37,5 @@ func (m Migration) Validate() ValidateError {
 		return err
 	}
 
-	return GetModelValidValidateError()
+	return CreateModelValidValidateError()
 }

@@ -2,7 +2,8 @@ package mongomigrations
 
 import (
 	"context"
-	"errors"
+
+	"github.com/blendermux/common"
 
 	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
 
@@ -29,7 +30,7 @@ func (m M20200507205301) Up() error {
 	//set user indexes
 	_, err := m.Users.Indexes().CreateMany(context.TODO(), userIndexes)
 	if err != nil {
-		return errors.New("Error creating user indexes: " + err.Error())
+		return common.ChainError("error creating user indexes", err)
 	}
 
 	return nil
@@ -39,7 +40,7 @@ func (m M20200507205301) Down() error {
 	//remove the created user indexes
 	_, err := m.Users.Indexes().DropOne(context.TODO(), "email_1")
 	if err != nil {
-		return errors.New("Error removing user indexes: " + err.Error())
+		return common.ChainError("error removing user indexes", err)
 	}
 
 	return nil

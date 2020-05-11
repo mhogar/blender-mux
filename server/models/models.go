@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type Model interface {
 	Validate() ValidateError
 }
@@ -18,6 +20,10 @@ const (
 	UserInvalidPasswordHash   = iota
 )
 
-func GetModelValidValidateError() ValidateError {
+func CreateModelValidValidateError() ValidateError {
 	return ValidateError{ModelValid, nil}
+}
+
+func CreateValidateError(status int, message string) ValidateError {
+	return ValidateError{status, errors.New(message)}
 }
