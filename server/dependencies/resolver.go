@@ -37,7 +37,7 @@ func CreateDependencyResolver() *DependencyResolver {
 func (resolver DependencyResolver) DestroyDependencies() error {
 	err := resolver.Database.Destroy()
 	if err != nil {
-		return common.ChainError("error destorying database dependency", verr)
+		return common.ChainError("error destorying database dependency", err)
 	}
 
 	return nil
