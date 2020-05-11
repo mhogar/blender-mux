@@ -11,17 +11,25 @@ import (
 )
 
 type MongoAdapter struct {
+	context    context.Context
+	cancelFunc context.CancelFunc
 	Client     *mongo.Client
 	Migrations *mongo.Collection
 	Users      *mongo.Collection
 }
 
-func (db *MongoAdapter) Initialize() error {
-	//connect to the db
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func (db MongoAdapter) CreateStandardTimeoutContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(db.context, 3*time.Second)
+}
 
+func (db *MongoAdapter) Initialize() error {
+	db.context, db.cancelFunc = context.WithCancel(context.Background())
+
+	//connect to the db
+	ctx, cancel := db.CreateStandardTimeoutContext()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	cancel()
+
 	if err != nil {
 		return err
 	}
@@ -36,10 +44,12 @@ func (db *MongoAdapter) Initialize() error {
 }
 
 func (db MongoAdapter) Destroy() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	defer db.cancelFunc() //cancel any remaining requests that may still be running
 
+	ctx, cancel := db.CreateStandardTimeoutContext()
 	err := db.Client.Disconnect(ctx)
+	cancel()
+
 	if err != nil {
 		return common.ChainError("error disconnecting from database", err)
 	}
@@ -48,10 +58,10 @@ func (db MongoAdapter) Destroy() error {
 }
 
 func (db MongoAdapter) Ping() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+	ctx, cancel := db.CreateStandardTimeoutContext()
 	err := db.Client.Ping(ctx, readpref.Primary())
+	cancel()
+
 	if err != nil {
 		return common.ChainError("error pinging database", err)
 	}

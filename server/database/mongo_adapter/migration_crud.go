@@ -1,9 +1,6 @@
 package mongoadapter
 
 import (
-	"context"
-	"time"
-
 	"github.com/blendermux/common"
 	"github.com/blendermux/server/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,10 +16,10 @@ func (db MongoAdapter) CreateMigration(timestamp string) error {
 	migration := models.CreateNewMigration(timestamp)
 
 	//insert the migration
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+	ctx, cancel := db.CreateStandardTimeoutContext()
 	_, err := db.Migrations.InsertOne(ctx, migration)
+	cancel()
+
 	if err != nil {
 		return common.ChainError("error inserting migration", err)
 	}
@@ -37,17 +34,21 @@ func (db MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	opts.SetLimit(1)
 
 	//run the query
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+	ctx, cancel := db.CreateStandardTimeoutContext()
 	cursor, err := db.Migrations.Find(ctx, bson.D{}, opts)
+	cancel()
+
 	if err != nil {
 		return "", false, err
 	}
 
 	//parse the results
 	var results []models.Migration
-	err = cursor.All(context.TODO(), &results)
+
+	ctx, cancel = db.CreateStandardTimeoutContext()
+	err = cursor.All(ctx, &results)
+	cancel()
+
 	if err != nil {
 		return "", false, err
 	}
