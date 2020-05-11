@@ -7,5 +7,3 @@ server/server
 main
 
 server/database/migration_runner/migration_runner
-
-common/migration_runner/mocks/
