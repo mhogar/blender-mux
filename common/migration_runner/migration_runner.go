@@ -2,6 +2,8 @@ package migrationrunner
 
 import (
 	"log"
+
+	"github.com/blendermux/common"
 )
 
 type Migration interface {
@@ -16,21 +18,21 @@ type MigrationRepository interface {
 
 type MigrationCRUD interface {
 	CreateMigration(timestamp string) error
-	GetLatestTimestamp() (string, error)
+	GetLatestTimestamp() (string, bool, error)
 }
 
-func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) {
+func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) error {
 	//load the migrations
 	migrations := migrationRepo.GetMigrations()
 
 	//get latest timestamp
-	latestTimestamp, err := db.GetLatestTimestamp()
+	latestTimestamp, hasLatest, err := db.GetLatestTimestamp()
 	if err != nil {
-		log.Fatal("Could not get latest timestamp:", err)
+		return common.ChainError("error getting latest timestamp", err)
 	}
 
 	//print the timestamp if it exists
-	if latestTimestamp == "" {
+	if !hasLatest {
 		log.Println("No timestamps found.")
 	} else {
 		log.Println("Latest timestamp:", latestTimestamp)
@@ -40,18 +42,18 @@ func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) {
 	for _, migration := range migrations {
 		timestamp := migration.GetTimestamp()
 
-		if timestamp > latestTimestamp {
+		if !hasLatest || timestamp > latestTimestamp {
 			log.Println("Running", timestamp)
 
 			err = migration.Up()
 			if err != nil {
-				log.Fatal("Error running migration:", err)
+				return common.ChainError("error running migration", err)
 			}
 
 			//save the migration to db to mark it as run
 			err = db.CreateMigration(timestamp)
 			if err != nil {
-				log.Fatal("Error saving migration:", err)
+				return common.ChainError("error saving migration", err)
 			}
 		} else {
 			log.Println("Skipping", timestamp)
@@ -59,4 +61,5 @@ func RunMigrations(migrationRepo MigrationRepository, db MigrationCRUD) {
 	}
 
 	log.Println("Finished running migrations.")
+	return nil
 }

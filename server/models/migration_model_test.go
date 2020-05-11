@@ -3,11 +3,9 @@ package models_test
 import (
 	"testing"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"github.com/blendermux/server/models"
-
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MigrationTestSuite struct {

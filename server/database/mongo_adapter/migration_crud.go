@@ -30,7 +30,7 @@ func (db MongoAdapter) CreateMigration(timestamp string) error {
 	return nil
 }
 
-func (db MongoAdapter) GetLatestTimestamp() (string, error) {
+func (db MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	//set options to sort by timestamp desc and get max of 1 result
 	opts := options.Find()
 	opts.SetSort(bson.D{{"timestamp", -1}})
@@ -42,20 +42,20 @@ func (db MongoAdapter) GetLatestTimestamp() (string, error) {
 
 	cursor, err := db.Migrations.Find(ctx, bson.D{}, opts)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	//parse the results
 	var results []models.Migration
 	err = cursor.All(context.TODO(), &results)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	//return the latest timestamp from the results
 	if len(results) > 0 {
-		return results[0].Timestamp, nil
+		return results[0].Timestamp, true, nil
 	}
 
-	return "", nil
+	return "", false, nil
 }

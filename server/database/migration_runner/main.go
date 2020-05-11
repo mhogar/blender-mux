@@ -19,5 +19,8 @@ func main() {
 		log.Fatal("Could not connect to database: ", err)
 	}
 
-	migrationrunner.RunMigrations(resolver.MigrationRepository, db)
+	err = migrationrunner.RunMigrations(resolver.MigrationRepository, db)
+	if err != nil {
+		log.Fatal("Error running migrations:", err)
+	}
 }
