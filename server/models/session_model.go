@@ -13,9 +13,9 @@ type Session struct {
 
 func CreateNewSession(token uuid.UUID, userID primitive.ObjectID) *Session {
 	return &Session{
-		primitive.NewObjectID(),
-		token,
-		userID,
+		ID:     primitive.NewObjectID(),
+		Token:  token,
+		UserID: userID,
 	}
 }
 

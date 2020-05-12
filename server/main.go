@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	resolver := dependencies.GetDependencyResolver()
+	resolver := dependencies.CreateDependencyResolver()
 	router := configureRoutes(resolver)
 
 	//create the server
@@ -31,13 +31,13 @@ func configureRoutes(resolver dependencies.DependencyResolver) *httprouter.Route
 	router := httprouter.New()
 
 	accountCon := controllers.AccountController{
-		resolver.Database,
+		UserCRUD: resolver.Database,
 	}
 	router.POST("/account", accountCon.PostAccount)
 
 	sessionCon := controllers.SessionController{
-		resolver.Database,
-		resolver.Database,
+		UserCRUD:    resolver.Database,
+		SessionCRUD: resolver.Database,
 	}
 	router.POST("/login", sessionCon.PostLogin)
 	router.POST("/logout", sessionCon.PostLogout)

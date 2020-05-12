@@ -14,9 +14,9 @@ type User struct {
 
 func CreateNewUser(email string, passwordHash []byte) *User {
 	return &User{
-		primitive.NewObjectID(),
-		email,
-		passwordHash,
+		ID:           primitive.NewObjectID(),
+		Email:        email,
+		PasswordHash: passwordHash,
 	}
 }
 

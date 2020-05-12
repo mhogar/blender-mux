@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	resolver := dependencies.GetDependencyResolver()
+	resolver := dependencies.CreateDependencyResolver()
 	db := resolver.Database
 
 	//open the db connection

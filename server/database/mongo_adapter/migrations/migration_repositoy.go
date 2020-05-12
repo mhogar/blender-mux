@@ -1,4 +1,4 @@
-package mongomigrations
+package migrations
 
 import (
 	migrationrunner "github.com/blendermux/common/migration_runner"
@@ -11,6 +11,6 @@ type MongoMigrationRepository struct {
 
 func (repo MongoMigrationRepository) GetMigrations() []migrationrunner.Migration {
 	return []migrationrunner.Migration{
-		M20200507205301{repo.MongoAdapter},
+		M20200507205301{MongoAdapter: repo.MongoAdapter},
 	}
 }

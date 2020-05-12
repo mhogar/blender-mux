@@ -13,8 +13,8 @@ type Migration struct {
 
 func CreateNewMigration(timestamp string) *Migration {
 	return &Migration{
-		primitive.NewObjectID(),
-		timestamp,
+		ID:        primitive.NewObjectID(),
+		Timestamp: timestamp,
 	}
 }
 

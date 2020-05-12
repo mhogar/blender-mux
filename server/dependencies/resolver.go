@@ -1,12 +1,11 @@
 package dependencies
 
 import (
-	mongomigrations "github.com/blendermux/server/database/migrations/mongo_migrations"
-
 	migrationrunner "github.com/blendermux/common/migration_runner"
 
 	"github.com/blendermux/server/database"
 	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
+	"github.com/blendermux/server/database/mongo_adapter/migrations"
 )
 
 type DependencyResolver struct {
@@ -14,12 +13,12 @@ type DependencyResolver struct {
 	migrationrunner.MigrationRepository
 }
 
-func GetDependencyResolver() DependencyResolver {
+func CreateDependencyResolver() DependencyResolver {
 	database := &mongoadapter.MongoAdapter{}
-	migrationRepo := &mongomigrations.MongoMigrationRepository{database}
+	migrationRepo := &migrations.MongoMigrationRepository{MongoAdapter: database}
 
 	return DependencyResolver{
-		database,
-		migrationRepo,
+		Database:            database,
+		MigrationRepository: migrationRepo,
 	}
 }

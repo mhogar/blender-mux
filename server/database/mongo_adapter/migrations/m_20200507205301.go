@@ -1,4 +1,4 @@
-package mongomigrations
+package migrations
 
 import (
 	"github.com/blendermux/common"
@@ -21,7 +21,7 @@ func (m M20200507205301) Up() error {
 	//index users on email
 	userIndexes := []mongo.IndexModel{
 		{
-			Keys: bson.D{{"email", 1}},
+			Keys: bson.D{{Key: "email", Value: 1}},
 		},
 	}
 

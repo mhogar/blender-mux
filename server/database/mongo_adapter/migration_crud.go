@@ -30,7 +30,7 @@ func (db *MongoAdapter) CreateMigration(timestamp string) error {
 func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	//set options to sort by timestamp desc and get max of 1 result
 	opts := options.Find()
-	opts.SetSort(bson.D{{"timestamp", -1}})
+	opts.SetSort(bson.D{{Key: "timestamp", Value: -1}})
 	opts.SetLimit(1)
 
 	//run the query
