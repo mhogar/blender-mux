@@ -21,7 +21,7 @@ func (db *MongoAdapter) CreateMigration(timestamp string) error {
 	cancel()
 
 	if err != nil {
-		return common.ChainError("error inserting migration", err)
+		return common.ChainError("error running insert query", err)
 	}
 
 	return nil
@@ -39,7 +39,7 @@ func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	cancel()
 
 	if err != nil {
-		return "", false, err
+		return "", false, common.ChainError("error running find query", err)
 	}
 
 	//parse the results
@@ -50,7 +50,7 @@ func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	cancel()
 
 	if err != nil {
-		return "", false, err
+		return "", false, common.ChainError("error iterating over results", err)
 	}
 
 	//return the latest timestamp from the results
@@ -59,4 +59,16 @@ func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	}
 
 	return "", false, nil
+}
+
+func (db *MongoAdapter) DeleteMigrationByTimestamp(timestamp string) error {
+	ctx, cancel := db.CreateStandardTimeoutContext()
+	_, err := db.Migrations.DeleteOne(ctx, bson.D{{Key: "timestamp", Value: timestamp}})
+	cancel()
+
+	if err != nil {
+		return common.ChainError("error running delete query", err)
+	}
+
+	return nil
 }

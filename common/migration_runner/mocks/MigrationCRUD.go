@@ -23,6 +23,20 @@ func (_m *MigrationCRUD) CreateMigration(timestamp string) error {
 	return r0
 }
 
+// DeleteMigrationByTimestamp provides a mock function with given fields: timestamp
+func (_m *MigrationCRUD) DeleteMigrationByTimestamp(timestamp string) error {
+	ret := _m.Called(timestamp)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(timestamp)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetLatestTimestamp provides a mock function with given fields:
 func (_m *MigrationCRUD) GetLatestTimestamp() (string, bool, error) {
 	ret := _m.Called()
