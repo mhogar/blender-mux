@@ -1,9 +1,6 @@
 package dependencies
 
 import (
-	"log"
-
-	"github.com/blendermux/common"
 	mongomigrations "github.com/blendermux/server/database/migrations/mongo_migrations"
 
 	migrationrunner "github.com/blendermux/common/migration_runner"
@@ -17,28 +14,12 @@ type DependencyResolver struct {
 	migrationrunner.MigrationRepository
 }
 
-func CreateDependencyResolver() *DependencyResolver {
-	//init database dependency
-	database := mongoadapter.MongoAdapter{}
-	err := database.Initialize()
-	if err != nil {
-		log.Fatal(err)
-	}
+func GetDependencyResolver() DependencyResolver {
+	database := &mongoadapter.MongoAdapter{}
+	migrationRepo := &mongomigrations.MongoMigrationRepository{database}
 
-	//init migration repository dependency
-	migrationRepo := mongomigrations.MongoMigrationRepository{database}
-
-	return &DependencyResolver{
+	return DependencyResolver{
 		database,
 		migrationRepo,
 	}
-}
-
-func (resolver DependencyResolver) DestroyDependencies() error {
-	err := resolver.Database.Destroy()
-	if err != nil {
-		return common.ChainError("error destorying database dependency", err)
-	}
-
-	return nil
 }

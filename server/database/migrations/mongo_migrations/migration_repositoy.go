@@ -6,7 +6,7 @@ import (
 )
 
 type MongoMigrationRepository struct {
-	mongoadapter.MongoAdapter
+	*mongoadapter.MongoAdapter
 }
 
 func (repo MongoMigrationRepository) GetMigrations() []migrationrunner.Migration {

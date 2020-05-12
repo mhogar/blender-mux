@@ -7,10 +7,15 @@ import (
 )
 
 type Database interface {
+	DBConnection
 	migrationrunner.MigrationCRUD
 	UserCRUD
 	SessionCRUD
-	Destroy() error
+}
+
+type DBConnection interface {
+	OpenConnection() error
+	CloseConnection() error
 	Ping() error
 }
 

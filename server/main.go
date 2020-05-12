@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	resolver := dependencies.CreateDependencyResolver()
+	resolver := dependencies.GetDependencyResolver()
 	router := configureRoutes(resolver)
 
 	//create the server
@@ -27,7 +27,7 @@ func main() {
 	log.Fatal(server.ListenAndServeTLS("server/cert/public.crt", "server/cert/private.key"))
 }
 
-func configureRoutes(resolver *dependencies.DependencyResolver) *httprouter.Router {
+func configureRoutes(resolver dependencies.DependencyResolver) *httprouter.Router {
 	router := httprouter.New()
 
 	accountCon := controllers.AccountController{

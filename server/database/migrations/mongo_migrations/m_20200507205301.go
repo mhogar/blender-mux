@@ -10,7 +10,7 @@ import (
 )
 
 type M20200507205301 struct {
-	mongoadapter.MongoAdapter
+	*mongoadapter.MongoAdapter
 }
 
 func (m M20200507205301) GetTimestamp() string {
@@ -42,7 +42,7 @@ func (m M20200507205301) Down() error {
 	ctx, cancel := m.CreateStandardTimeoutContext()
 	_, err := m.Users.Indexes().DropOne(ctx, "email_1")
 	cancel()
-	
+
 	if err != nil {
 		return common.ChainError("error removing user indexes", err)
 	}

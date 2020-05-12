@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (db MongoAdapter) CreateMigration(timestamp string) error {
+func (db *MongoAdapter) CreateMigration(timestamp string) error {
 	//validate timestamp and create the migration to save
 	verr := models.ValidateMigrationTimestamp(timestamp)
 	if verr.Status != models.ModelValid {
@@ -27,7 +27,7 @@ func (db MongoAdapter) CreateMigration(timestamp string) error {
 	return nil
 }
 
-func (db MongoAdapter) GetLatestTimestamp() (string, bool, error) {
+func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	//set options to sort by timestamp desc and get max of 1 result
 	opts := options.Find()
 	opts.SetSort(bson.D{{"timestamp", -1}})

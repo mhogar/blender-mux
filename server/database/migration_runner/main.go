@@ -8,17 +8,24 @@ import (
 )
 
 func main() {
-	resolver := dependencies.CreateDependencyResolver()
-	defer resolver.DestroyDependencies()
-
+	resolver := dependencies.GetDependencyResolver()
 	db := resolver.Database
 
-	//check db connection
-	err := db.Ping()
+	//open the db connection
+	err := db.OpenConnection()
 	if err != nil {
-		log.Fatal("Could not connect to database: ", err)
+		log.Fatal("Could not create database connection:", err)
 	}
 
+	defer db.CloseConnection()
+
+	//check db is connected
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Could not reach database:", err)
+	}
+
+	//run the migrations
 	err = migrationrunner.RunMigrations(resolver.MigrationRepository, db)
 	if err != nil {
 		log.Fatal("Error running migrations:", err)
