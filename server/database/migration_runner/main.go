@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/blendermux/common"
+
 	migrationrunner "github.com/blendermux/common/migration_runner"
 	"github.com/blendermux/server/dependencies"
 )
@@ -19,7 +21,7 @@ func main() {
 	//open the db connection
 	err := db.OpenConnection()
 	if err != nil {
-		log.Fatal("Could not create database connection: ", err)
+		log.Fatal(common.ChainError("Could not create database connection", err))
 	}
 
 	defer db.CloseConnection()
@@ -27,7 +29,7 @@ func main() {
 	//check db is connected
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Could not reach database: ", err)
+		log.Fatal(common.ChainError("Could not reach database", err))
 	}
 
 	//run the migrations
@@ -38,6 +40,6 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatal("Error running migrations: ", err)
+		log.Fatal(common.ChainError("Error running migrations", err))
 	}
 }

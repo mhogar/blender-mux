@@ -1,0 +1,11 @@
+{
+    "local": {
+        "url": "localhost",
+        "port": "27017",
+        "timeout": 3000,
+        "dbs": {
+            "core": "core",
+            "integration": "integration"
+        }
+    }
+}

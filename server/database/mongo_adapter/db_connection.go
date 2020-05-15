@@ -2,6 +2,9 @@ package mongoadapter
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"log"
 
 	"github.com/blendermux/common"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,19 +13,34 @@ import (
 )
 
 func (db *MongoAdapter) OpenConnection() error {
+	dbConfig, err := db.GetDatabaseConfig()
+	if err != nil {
+		return common.ChainError("error getting database config", err)
+	}
+
 	db.context, db.cancelFunc = context.WithCancel(context.Background())
+	db.timeout = dbConfig.Timeout
 
 	//connect to the db
+	connectionStr := fmt.Sprintf("mongodb://%s:%s", dbConfig.URL, dbConfig.Port)
+	log.Println("Connecting to database with connection string", connectionStr)
+
 	ctx, cancel := db.CreateStandardTimeoutContext()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionStr))
 	cancel()
 
 	if err != nil {
 		return common.ChainError("error opening database connection", err)
 	}
 
+	//get the database name
+	dbName, ok := dbConfig.Dbs[db.DbKey]
+	if !ok {
+		return errors.New("could not find database name with key " + db.DbKey)
+	}
+
 	//set the adapter fields
-	core := client.Database("core")
+	core := client.Database(dbName)
 	db.Client = client
 	db.Migrations = core.Collection("migrations")
 	db.Users = core.Collection("users")
