@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	migrationrunner "github.com/blendermux/common/migration_runner"
-	"github.com/blendermux/common/migration_runner/mocks"
+	migrationrunner "blendermux/common/migration_runner"
+	"blendermux/common/migration_runner/mocks"
 
 	"github.com/stretchr/testify/suite"
 )

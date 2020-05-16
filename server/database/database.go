@@ -1,8 +1,8 @@
 package database
 
 import (
-	migrationrunner "github.com/blendermux/common/migration_runner"
-	"github.com/blendermux/server/models"
+	migrationrunner "blendermux/common/migration_runner"
+	"blendermux/server/models"
 	"github.com/google/uuid"
 )
 

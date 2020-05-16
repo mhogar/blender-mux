@@ -4,9 +4,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/blendermux/common"
-	"github.com/blendermux/server/config"
-	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
+	"blendermux/common"
+	"blendermux/server/config"
+	mongoadapter "blendermux/server/database/mongo_adapter"
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/stretchr/testify/suite"

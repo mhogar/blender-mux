@@ -1,4 +1,4 @@
-module github.com/blendermux
+module blendermux
 
 go 1.14
 

@@ -4,12 +4,12 @@ import (
 	"flag"
 	"log"
 
-	"github.com/blendermux/server/config"
+	"blendermux/server/config"
 
-	"github.com/blendermux/common"
+	"blendermux/common"
 
-	migrationrunner "github.com/blendermux/common/migration_runner"
-	"github.com/blendermux/server/dependencies"
+	migrationrunner "blendermux/common/migration_runner"
+	"blendermux/server/dependencies"
 )
 
 func main() {

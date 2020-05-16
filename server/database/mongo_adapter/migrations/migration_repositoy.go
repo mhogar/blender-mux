@@ -1,8 +1,8 @@
 package migrations
 
 import (
-	migrationrunner "github.com/blendermux/common/migration_runner"
-	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
+	migrationrunner "blendermux/common/migration_runner"
+	mongoadapter "blendermux/server/database/mongo_adapter"
 )
 
 type MongoMigrationRepository struct {

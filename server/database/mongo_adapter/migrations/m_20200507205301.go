@@ -1,9 +1,9 @@
 package migrations
 
 import (
-	"github.com/blendermux/common"
+	"blendermux/common"
 
-	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
+	mongoadapter "blendermux/server/database/mongo_adapter"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

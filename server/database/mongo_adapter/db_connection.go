@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/blendermux/server/config"
+	"blendermux/server/config"
+
 	"github.com/spf13/viper"
 
-	"github.com/blendermux/common"
+	"blendermux/common"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"

@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/config"
-	"github.com/blendermux/server/controllers"
-	"github.com/blendermux/server/dependencies"
+	"blendermux/server/config"
+	"blendermux/server/controllers"
+	"blendermux/server/dependencies"
 
 	"github.com/julienschmidt/httprouter"
 )

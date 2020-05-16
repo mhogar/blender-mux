@@ -3,8 +3,8 @@ package mongoadapter
 import (
 	"errors"
 
-	"github.com/blendermux/common"
-	"github.com/blendermux/server/models"
+	"blendermux/common"
+	"blendermux/server/models"
 	"github.com/google/uuid"
 )
 

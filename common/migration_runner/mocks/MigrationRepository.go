@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	migrationrunner "github.com/blendermux/common/migration_runner"
+	migrationrunner "blendermux/common/migration_runner"
 	mock "github.com/stretchr/testify/mock"
 )
 

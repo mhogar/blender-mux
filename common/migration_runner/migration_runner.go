@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/blendermux/common"
+	"blendermux/common"
 )
 
 type Migration interface {

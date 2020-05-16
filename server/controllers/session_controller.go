@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/database"
-	"github.com/blendermux/server/models"
+	"blendermux/server/database"
+	"blendermux/server/models"
 
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"

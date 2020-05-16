@@ -1,11 +1,11 @@
 package dependencies
 
 import (
-	migrationrunner "github.com/blendermux/common/migration_runner"
-	databasepkg "github.com/blendermux/server/database"
+	migrationrunner "blendermux/common/migration_runner"
+	databasepkg "blendermux/server/database"
 
-	mongoadapter "github.com/blendermux/server/database/mongo_adapter"
-	"github.com/blendermux/server/database/mongo_adapter/migrations"
+	mongoadapter "blendermux/server/database/mongo_adapter"
+	"blendermux/server/database/mongo_adapter/migrations"
 )
 
 var database databasepkg.Database

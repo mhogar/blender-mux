@@ -4,6 +4,8 @@ env:
   - GO111MODULE=on CFG_ENV=travis
 services:
   - mongodb
+go:
+  - 1.14.x
 
 jobs:
   include:

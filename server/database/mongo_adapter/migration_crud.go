@@ -1,8 +1,8 @@
 package mongoadapter
 
 import (
-	"github.com/blendermux/common"
-	"github.com/blendermux/server/models"
+	"blendermux/common"
+	"blendermux/server/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

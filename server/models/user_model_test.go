@@ -5,7 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"github.com/blendermux/server/models"
+	"blendermux/server/models"
 
 	"github.com/stretchr/testify/suite"
 )

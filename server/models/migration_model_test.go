@@ -3,7 +3,7 @@ package models_test
 import (
 	"testing"
 
-	"github.com/blendermux/server/models"
+	"blendermux/server/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
