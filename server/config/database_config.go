@@ -1,35 +1,26 @@
 package config
 
-import (
-	"errors"
-
-	"github.com/blendermux/common"
-)
+import "github.com/spf13/viper"
 
 type DatabaseConfig struct {
-	URL     string            `json:"url"`
-	Port    string            `json:"port"`
-	Timeout int               `json:"timeout"`
-	Dbs     map[string]string `json:"dbs"`
+	URL     string
+	Port    string
+	Timeout int
+	DBs     map[string]string
 }
 
-type databaseConfigMap map[string]DatabaseConfig
+func initDatabaseConfig() {
+	config := make(map[string]interface{})
 
-func (repo *ConfigFileRepository) GetDatabaseConfig() (DatabaseConfig, error) {
-	//load the config if doesn't already exist
-	if repo.databaseConfigMap == nil {
-		repo.databaseConfigMap = make(databaseConfigMap)
-		err := common.LoadConfigFromFile("config/database.json", &repo.databaseConfigMap)
-		if err != nil {
-			return DatabaseConfig{}, common.ChainError("error loading database config", err)
-		}
+	config["local"] = DatabaseConfig{
+		URL:     "localhost",
+		Port:    "27017",
+		Timeout: 3000,
+		DBs: map[string]string{
+			"core":        "core",
+			"integration": "integration",
+		},
 	}
 
-	env := common.GetEnv()
-	config, ok := repo.databaseConfigMap[env]
-	if !ok {
-		return config, errors.New("no database config found for ENV " + env)
-	}
-
-	return config, nil
+	viper.Set("database", config)
 }

@@ -4,18 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/blendermux/server/config"
-
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type MongoAdapter struct {
-	config.ConfigRepository
 	context    context.Context
 	cancelFunc context.CancelFunc
 	timeout    int
 	DbKey      string
 	Client     *mongo.Client
+	Database   *mongo.Database
 	Migrations *mongo.Collection
 	Users      *mongo.Collection
 }

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/blendermux/server/config"
+	"github.com/spf13/viper"
+
 	"github.com/blendermux/common"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -13,10 +16,7 @@ import (
 )
 
 func (db *MongoAdapter) OpenConnection() error {
-	dbConfig, err := db.GetDatabaseConfig()
-	if err != nil {
-		return common.ChainError("error getting database config", err)
-	}
+	dbConfig := viper.GetStringMap("database")[viper.GetString("env")].(config.DatabaseConfig)
 
 	db.context, db.cancelFunc = context.WithCancel(context.Background())
 	db.timeout = dbConfig.Timeout
@@ -34,16 +34,16 @@ func (db *MongoAdapter) OpenConnection() error {
 	}
 
 	//get the database name
-	dbName, ok := dbConfig.Dbs[db.DbKey]
+	dbName, ok := dbConfig.DBs[db.DbKey]
 	if !ok {
 		return errors.New("could not find database name with key " + db.DbKey)
 	}
 
 	//set the adapter fields
-	core := client.Database(dbName)
 	db.Client = client
-	db.Migrations = core.Collection("migrations")
-	db.Users = core.Collection("users")
+	db.Database = client.Database(dbName)
+	db.Migrations = db.Database.Collection("migrations")
+	db.Users = db.Database.Collection("users")
 
 	return nil
 }

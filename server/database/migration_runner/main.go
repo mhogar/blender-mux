@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/blendermux/server/config"
+
 	"github.com/blendermux/common"
 
 	migrationrunner "github.com/blendermux/common/migration_runner"
@@ -11,12 +13,13 @@ import (
 )
 
 func main() {
+	config.InitConfig()
+
 	//parse flags
 	down := flag.Bool("down", false, "Run the most recent migration down")
 	flag.Parse()
 
-	resolver := dependencies.CreateDependencyResolver()
-	db := resolver.Database
+	db := dependencies.ResolveDatabase()
 
 	//open the db connection
 	err := db.OpenConnection()
@@ -34,9 +37,9 @@ func main() {
 
 	//run the migrations
 	if *down {
-		err = migrationrunner.MigrateDown(resolver.MigrationRepository, db)
+		err = migrationrunner.MigrateDown(dependencies.ResolveMigrationRepository(), db)
 	} else {
-		err = migrationrunner.MigrateUp(resolver.MigrationRepository, db)
+		err = migrationrunner.MigrateUp(dependencies.ResolveMigrationRepository(), db)
 	}
 
 	if err != nil {

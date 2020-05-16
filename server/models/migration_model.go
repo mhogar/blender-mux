@@ -3,17 +3,17 @@ package models
 import (
 	"regexp"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
 )
 
 type Migration struct {
-	ID        primitive.ObjectID `bson:"_id"`
-	Timestamp string             `bson:"timestamp"`
+	ID        uuid.UUID `bson:"id"`
+	Timestamp string    `bson:"timestamp"`
 }
 
 func CreateNewMigration(timestamp string) *Migration {
 	return &Migration{
-		ID:        primitive.NewObjectID(),
+		ID:        uuid.New(),
 		Timestamp: timestamp,
 	}
 }
@@ -28,7 +28,7 @@ func ValidateMigrationTimestamp(timestamp string) ValidateError {
 }
 
 func (m Migration) Validate() ValidateError {
-	if m.ID == primitive.NilObjectID {
+	if m.ID == uuid.Nil {
 		return CreateValidateError(MigrationInvalidID, "id cannot be nil")
 	}
 

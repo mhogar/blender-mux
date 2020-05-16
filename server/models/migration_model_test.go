@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/blendermux/server/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -42,7 +43,7 @@ func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelVal
 
 func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigrationInvalidID() {
 	//arrange
-	suite.Migration.ID = primitive.NilObjectID
+	suite.Migration.ID = uuid.Nil
 
 	//act
 	err := suite.Migration.Validate()
