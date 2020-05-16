@@ -2,6 +2,15 @@ package config
 
 import "github.com/spf13/viper"
 
+// DatabaseConfig is a struct with fields needed for configuring database operations.
+//
+// URL is the url of the database server.
+//
+// Port is the port on the database server to connect to.
+//
+// Timeout is the default timeout all database requests should use.
+//
+// DBs is a string map that maps db keys to the actual name of the database.
 type DatabaseConfig struct {
 	URL     string
 	Port    string

@@ -7,22 +7,24 @@ import (
 	"blendermux/common"
 )
 
-type Migration interface {
-	GetTimestamp() string
-	Up() error
-	Down() error
-}
-
-type MigrationRepository interface {
-	GetMigrations() []Migration
-}
-
+// MigrationCRUD is an interface for preforming CRUD operations on a migration.
+//
+// CreateMigration creates a new migration with the given timestamp and returns any errors.
+//
+// GetLatestTimestamp returns the latest timestamp of all migrations. If no timestamps are found then
+// hasLatest should be false, else it should be true. Also returns any errors encountered.
+//
+// DeleteMigrationByTimestamp deletes the migration with the given timestamp and returns any errors.
 type MigrationCRUD interface {
 	CreateMigration(timestamp string) error
-	GetLatestTimestamp() (string, bool, error)
+	GetLatestTimestamp() (timestamp string, hasLatest bool, err error)
 	DeleteMigrationByTimestamp(timestamp string) error
 }
 
+// MigrateUp runs the Up method for all migrations returned by migrationRepo that are newer than the latest timestamp fetched by db;
+// and will create a new migration for every one that's run. If there is no latest timestamp, all migrations will be run.
+// If any errors are encountered, the whole function will be aborted and any migrations yet to run will not be run.
+// Returns the errors encountered.
 func MigrateUp(migrationRepo MigrationRepository, db MigrationCRUD) error {
 	log.Println("Migrating Up")
 
@@ -67,6 +69,8 @@ func MigrateUp(migrationRepo MigrationRepository, db MigrationCRUD) error {
 	return nil
 }
 
+// MigrateDown runs the Down method for the migration whose timestamp matches the latest timestamp returned by db.
+// If there is no latest timestamp, an error will be returned. Will return any other errors that are encountered.
 func MigrateDown(migrationRepo MigrationRepository, db MigrationCRUD) error {
 	log.Println("Migrating Down")
 

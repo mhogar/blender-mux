@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Database is an interface that wraps the other database intefaces.
 type Database interface {
 	DBConnection
 	migrationrunner.MigrationCRUD
@@ -14,6 +15,14 @@ type Database interface {
 	SessionCRUD
 }
 
+// DBConnection is an interface for controlling the connection to the database.
+//
+// OpenConnection should open the connection to the database. Returns any errors.
+//
+// CloseConnection should close the connection to the database and cleanup associated resources. Returns any errors.
+//
+// Ping should ping the database to verify it can still be reached.
+// Returns an error if the database can't be reached or if any other errors occur.
 type DBConnection interface {
 	OpenConnection() error
 	CloseConnection() error

@@ -8,6 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// CreateMigration creates a new migration model using the given timestamp and inserts it as a document into the migrations collection.
+// Returns any errors.
 func (db *MongoAdapter) CreateMigration(timestamp string) error {
 	//validate timestamp and create the migration to save
 	verr := models.ValidateMigrationTimestamp(timestamp)
@@ -28,7 +30,10 @@ func (db *MongoAdapter) CreateMigration(timestamp string) error {
 	return nil
 }
 
-func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
+// GetLatestTimestamp returns the latest timestamp of all migrations in the migrations collection.
+// If the migrations collection is empty, hasLatest will be false, else it will be true.
+// Will also return any errors.
+func (db *MongoAdapter) GetLatestTimestamp() (timestamp string, hasLatest bool, err error) {
 	//set options to sort by timestamp desc and get max of 1 result
 	opts := options.Find()
 	opts.SetSort(bson.D{{Key: "timestamp", Value: -1}})
@@ -62,6 +67,8 @@ func (db *MongoAdapter) GetLatestTimestamp() (string, bool, error) {
 	return "", false, nil
 }
 
+// DeleteMigrationByTimestamp deletes up to one migration from the migartions collections with a matching timestamp.
+// Returns any errors.
 func (db *MongoAdapter) DeleteMigrationByTimestamp(timestamp string) error {
 	ctx, cancel := db.CreateStandardTimeoutContext()
 	_, err := db.Migrations.DeleteOne(ctx, bson.D{{Key: "timestamp", Value: timestamp}})

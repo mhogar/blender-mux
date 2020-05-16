@@ -10,6 +10,8 @@ import (
 var database databasepkg.Database
 var migrationRepository migrationrunner.MigrationRepository
 
+// ResolveDatabase resolves the Database dependency.
+// Only the first call to this function will create a new Database, after which it will be retrieved from the cache.
 func ResolveDatabase() databasepkg.Database {
 	if database == nil {
 		database = &mongoadapter.MongoAdapter{
@@ -20,6 +22,8 @@ func ResolveDatabase() databasepkg.Database {
 	return database
 }
 
+// ResolveMigrationRepository resolves the MigrationRepository dependency.
+// Only the first call to this function will create a new MigrationRepository, after which it will be retrieved from the cache.
 func ResolveMigrationRepository() migrationrunner.MigrationRepository {
 	if migrationRepository == nil {
 		migrationRepository = &migrations.MongoMigrationRepository{
