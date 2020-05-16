@@ -1,9 +1,8 @@
 language: go
 os: linux
+dist: bionic
 env:
   - GO111MODULE=on CFG_ENV=travis
-services:
-  - mongodb
 go:
   - 1.14.x
 
@@ -36,6 +35,8 @@ jobs:
       script:
         - go test ./... -v -cover
     - name: Mongo Adapter Integration Tests
+      services:
+        - mongodb
       before_install:
         - cd server/database/mongo_adapter
       install: skip
