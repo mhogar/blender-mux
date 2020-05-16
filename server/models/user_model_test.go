@@ -3,7 +3,7 @@ package models_test
 import (
 	"testing"
 
-	"github.com/blendermux/server/models"
+	"blendermux/server/models"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -15,22 +15,36 @@ type UserTestSuite struct {
 }
 
 func (suite *UserTestSuite) SetupTest() {
-	suite.User = &models.User{
-		uuid.New(),
+	suite.User = models.CreateNewUser(
 		"email@email.com",
 		[]byte("password"),
-	}
+	)
 }
 
-func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsNilError() {
+func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
+	//arrange
+	email := "this is a test email"
+	hash := []byte("this is a password")
+
+	//act
+	user := models.CreateNewUser(email, hash)
+
+	//assert
+	suite.Require().NotNil(user)
+	suite.NotEqual(user.ID, uuid.Nil)
+	suite.EqualValues(user.Email, email)
+	suite.EqualValues(user.PasswordHash, hash)
+}
+
+func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	//act
 	err := suite.User.Validate()
 
 	//assert
-	suite.Nil(err)
+	suite.EqualValues(err.Status, models.ModelValid)
 }
 
-func (suite *UserTestSuite) TestValidate_WithNullUserID_ReturnsError() {
+func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
 	//arrange
 	suite.User.ID = uuid.Nil
 
@@ -38,11 +52,10 @@ func (suite *UserTestSuite) TestValidate_WithNullUserID_ReturnsError() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.Require().NotNil(err)
-	suite.Equal(err.Status, models.UserInvalidID)
+	suite.EqualValues(err.Status, models.UserInvalidID)
 }
 
-func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError() {
+func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsUserInvalidEmail() {
 	var email string
 	testCase := func() {
 		//arrange
@@ -52,8 +65,7 @@ func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError()
 		err := suite.User.Validate()
 
 		//assert
-		suite.Require().NotNil(err)
-		suite.Equal(err.Status, models.UserInvalidEmail)
+		suite.EqualValues(err.Status, models.UserInvalidEmail)
 	}
 
 	email = "@domain.ca"
@@ -78,7 +90,7 @@ func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsError()
 	suite.Run("TopLevelDomainTooShort", testCase)
 }
 
-func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsError() {
+func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvalidPasswordHash() {
 	//arrange
 	suite.User.PasswordHash = make([]byte, 0)
 
@@ -86,8 +98,7 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsError() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.Require().NotNil(err)
-	suite.Equal(err.Status, models.UserInvalidPasswordHash)
+	suite.EqualValues(err.Status, models.UserInvalidPasswordHash)
 }
 
 func TestUserTestSuite(t *testing.T) {

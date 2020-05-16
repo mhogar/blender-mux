@@ -1,7 +1,10 @@
 language: go
 os: linux
+dist: bionic
 env:
-  - GO111MODULE=on
+  - GO111MODULE=on CFG_ENV=travis
+go:
+  - 1.14.x
 
 jobs:
   include:
@@ -12,10 +15,30 @@ jobs:
       install: skip
       script: 
         - go build
+    - name: Build Migration Runner
+      before_install:
+        - cd server/database/migration_runner
+      install: skip
+      script: 
+        - go build
     - stage: Test
-      name: Server Tests
+      name: Server Unit Tests
       before_install:
         - cd server
+      install: skip
+      script:
+        - go test ./models/... -v -cover
+    - name: Migration Runner Unit Tests
+      before_install:
+        - cd common/migration_runner
+      install: skip
+      script:
+        - go test ./... -v -cover
+    - name: Mongo Adapter Integration Tests
+      services:
+        - mongodb
+      before_install:
+        - cd server/database/mongo_adapter
       install: skip
       script:
         - go test ./... -v -cover

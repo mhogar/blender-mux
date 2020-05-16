@@ -1,16 +1,10 @@
 package models
 
 import (
-	"errors"
 	"regexp"
 
 	"github.com/google/uuid"
 )
-
-func ValidateEmail(email string) bool {
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
-	return matched
-}
 
 type User struct {
 	ID           uuid.UUID
@@ -18,24 +12,36 @@ type User struct {
 	PasswordHash []byte
 }
 
-const (
-	UserInvalidID           = iota
-	UserInvalidEmail        = iota
-	UserInvalidPasswordHash = iota
-)
+func CreateNewUser(email string, passwordHash []byte) *User {
+	return &User{
+		ID:           uuid.New(),
+		Email:        email,
+		PasswordHash: passwordHash,
+	}
+}
 
-func (u *User) Validate() *ValidateError {
-	if u.ID == uuid.Nil {
-		return &ValidateError{UserInvalidID, errors.New("id cannot be nil")}
+func ValidateUserEmail(email string) ValidateError {
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
+	if !matched {
+		return CreateValidateError(UserInvalidEmail, "email is in invalid format")
 	}
 
-	if !ValidateEmail(u.Email) {
-		return &ValidateError{UserInvalidEmail, errors.New("email is in invalid format")}
+	return CreateModelValidValidateError()
+}
+
+func (u User) Validate() ValidateError {
+	if u.ID == uuid.Nil {
+		return CreateValidateError(UserInvalidID, "id cannot be nil")
+	}
+
+	err := ValidateUserEmail(u.Email)
+	if err.Status != ModelValid {
+		return err
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return &ValidateError{UserInvalidPasswordHash, errors.New("password hash cannot be null")}
+		return CreateValidateError(UserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return nil
+	return CreateModelValidValidateError()
 }

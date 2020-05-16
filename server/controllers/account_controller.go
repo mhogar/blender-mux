@@ -4,16 +4,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/dependencies"
-	"github.com/blendermux/server/models"
+	"blendermux/server/database"
+	"blendermux/server/models"
 
-	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountController struct {
-	dependencies.UserCRUD
+	database.UserCRUD
 }
 
 // PostAccount handles Post requests to "/account"
@@ -33,15 +32,16 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//validate email
-	emailValid := models.ValidateEmail(body.Email)
-	if !emailValid {
+	verr := models.ValidateUserEmail(body.Email)
+	if verr.Status != models.ModelValid {
+		log.Println(verr)
 		sendResponse(w, errorResponse{false, "email is not valid"})
 	}
 
 	//TODO: validate password meets criteria
 
 	//validate email is unique
-	otherUser := con.GetUserByEmail(body.Email)
+	otherUser, _ := con.GetUserByEmail(body.Email)
 	if otherUser != nil {
 		sendResponse(w, errorResponse{false, "an account with that email already exists"})
 		return
@@ -57,11 +57,8 @@ func (con *AccountController) PostAccount(w http.ResponseWriter, req *http.Reque
 	}
 
 	//save the user
-	err = con.CreateUser(&models.User{
-		uuid.New(),
-		body.Email,
-		hash,
-	})
+	user := models.CreateNewUser(body.Email, hash)
+	err = con.CreateUser(user)
 	if err != nil {
 		//TODO: handle error
 	}

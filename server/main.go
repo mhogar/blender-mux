@@ -5,15 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/blendermux/server/controllers"
-	"github.com/blendermux/server/dependencies"
+	"blendermux/server/config"
+	"blendermux/server/controllers"
+	"blendermux/server/dependencies"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 func main() {
-	resolver := dependencies.InitDependencyResolver()
-	router := configureRoutes(resolver)
+	config.InitConfig()
+	router := configureRoutes()
 
 	//create the server
 	server := &http.Server{
@@ -27,17 +28,17 @@ func main() {
 	log.Fatal(server.ListenAndServeTLS("server/cert/public.crt", "server/cert/private.key"))
 }
 
-func configureRoutes(resolver *dependencies.DependencyResolver) *httprouter.Router {
+func configureRoutes() *httprouter.Router {
 	router := httprouter.New()
 
 	accountCon := controllers.AccountController{
-		resolver.Database,
+		UserCRUD: dependencies.ResolveDatabase(),
 	}
 	router.POST("/account", accountCon.PostAccount)
 
 	sessionCon := controllers.SessionController{
-		resolver.Database,
-		resolver.Database,
+		UserCRUD:    dependencies.ResolveDatabase(),
+		SessionCRUD: dependencies.ResolveDatabase(),
 	}
 	router.POST("/login", sessionCon.PostLogin)
 	router.POST("/logout", sessionCon.PostLogout)
