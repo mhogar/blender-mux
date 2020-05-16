@@ -6,5 +6,9 @@ import (
 
 func InitConfig() {
 	viper.SetDefault("env", "local")
+
+	viper.SetEnvPrefix("cfg")
+	viper.BindEnv("env")
+
 	initDatabaseConfig()
 }

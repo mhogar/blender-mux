@@ -22,5 +22,15 @@ func initDatabaseConfig() {
 		},
 	}
 
+	config["travis"] = DatabaseConfig{
+		URL:     "127.0.0.1",
+		Port:    "27017",
+		Timeout: 3000,
+		DBs: map[string]string{
+			"core":        "core",
+			"integration": "integration",
+		},
+	}
+
 	viper.Set("database", config)
 }

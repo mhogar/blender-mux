@@ -30,7 +30,7 @@ func (suite *MigrationTestSuite) TestCreateNewMigration_CreatesMigrationWithSupp
 	//assert
 	suite.Require().NotNil(migration)
 	suite.NotEqual(migration.ID, primitive.NilObjectID)
-	suite.Equal(migration.Timestamp, timestamp)
+	suite.EqualValues(migration.Timestamp, timestamp)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelValid() {
@@ -38,7 +38,7 @@ func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelVal
 	err := suite.Migration.Validate()
 
 	//assert
-	suite.Equal(err.Status, models.ModelValid)
+	suite.EqualValues(err.Status, models.ModelValid)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigrationInvalidID() {
@@ -49,7 +49,7 @@ func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigratio
 	err := suite.Migration.Validate()
 
 	//assert
-	suite.Equal(err.Status, models.MigrationInvalidID)
+	suite.EqualValues(err.Status, models.MigrationInvalidID)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_ReturnsError() {
@@ -62,7 +62,7 @@ func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_Retur
 		err := suite.Migration.Validate()
 
 		//assert
-		suite.Equal(err.Status, models.MigrationInvalidTimestamp)
+		suite.EqualValues(err.Status, models.MigrationInvalidTimestamp)
 	}
 
 	timestamp = "0001010100000"

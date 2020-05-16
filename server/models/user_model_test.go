@@ -33,8 +33,8 @@ func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 	//assert
 	suite.Require().NotNil(user)
 	suite.NotEqual(user.ID, primitive.NilObjectID)
-	suite.Equal(user.Email, email)
-	suite.Equal(user.PasswordHash, hash)
+	suite.EqualValues(user.Email, email)
+	suite.EqualValues(user.PasswordHash, hash)
 }
 
 func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
@@ -42,7 +42,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.Equal(err.Status, models.ModelValid)
+	suite.EqualValues(err.Status, models.ModelValid)
 }
 
 func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
@@ -53,7 +53,7 @@ func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.Equal(err.Status, models.UserInvalidID)
+	suite.EqualValues(err.Status, models.UserInvalidID)
 }
 
 func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsUserInvalidEmail() {
@@ -66,7 +66,7 @@ func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsUserInv
 		err := suite.User.Validate()
 
 		//assert
-		suite.Equal(err.Status, models.UserInvalidEmail)
+		suite.EqualValues(err.Status, models.UserInvalidEmail)
 	}
 
 	email = "@domain.ca"
@@ -99,7 +99,7 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvali
 	err := suite.User.Validate()
 
 	//assert
-	suite.Equal(err.Status, models.UserInvalidPasswordHash)
+	suite.EqualValues(err.Status, models.UserInvalidPasswordHash)
 }
 
 func TestUserTestSuite(t *testing.T) {
