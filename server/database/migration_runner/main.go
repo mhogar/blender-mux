@@ -14,8 +14,15 @@ func main() {
 	config.InitConfig()
 
 	//parse flags
-	down := flag.Bool("down", false, "Run the most recent migration down")
+	help := flag.Bool("help", false, "Print this message")
+	down := flag.Bool("down", false, "Run migrate down instead of migrate up")
 	flag.Parse()
+
+	//print usage text
+	if *help {
+		flag.Usage()
+		return
+	}
 
 	db := dependencies.ResolveDatabase()
 
