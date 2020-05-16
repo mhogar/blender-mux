@@ -4,11 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/mock"
-
 	migrationrunner "blendermux/common/migration_runner"
 	"blendermux/common/migration_runner/mocks"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 

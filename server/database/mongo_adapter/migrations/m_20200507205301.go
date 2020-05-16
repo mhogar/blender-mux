@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"blendermux/common"
-
 	mongoadapter "blendermux/server/database/mongo_adapter"
 
 	"go.mongodb.org/mongo-driver/bson"

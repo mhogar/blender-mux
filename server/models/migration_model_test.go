@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"blendermux/server/models"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MigrationTestSuite struct {
@@ -29,7 +29,7 @@ func (suite *MigrationTestSuite) TestCreateNewMigration_CreatesMigrationWithSupp
 
 	//assert
 	suite.Require().NotNil(migration)
-	suite.NotEqual(migration.ID, primitive.NilObjectID)
+	suite.NotEqual(migration.ID, uuid.Nil)
 	suite.EqualValues(migration.Timestamp, timestamp)
 }
 

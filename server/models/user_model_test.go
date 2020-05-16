@@ -3,10 +3,9 @@ package models_test
 import (
 	"testing"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"blendermux/server/models"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -32,7 +31,7 @@ func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 
 	//assert
 	suite.Require().NotNil(user)
-	suite.NotEqual(user.ID, primitive.NilObjectID)
+	suite.NotEqual(user.ID, uuid.Nil)
 	suite.EqualValues(user.Email, email)
 	suite.EqualValues(user.PasswordHash, hash)
 }
@@ -47,7 +46,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 
 func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
 	//arrange
-	suite.User.ID = primitive.NilObjectID
+	suite.User.ID = uuid.Nil
 
 	//act
 	err := suite.User.Validate()

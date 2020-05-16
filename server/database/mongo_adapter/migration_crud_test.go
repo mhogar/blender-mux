@@ -7,9 +7,9 @@ import (
 	"blendermux/common"
 	"blendermux/server/config"
 	mongoadapter "blendermux/server/database/mongo_adapter"
-	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type MigrationCRUDTestSuite struct {

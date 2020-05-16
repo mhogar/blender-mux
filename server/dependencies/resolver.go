@@ -3,7 +3,6 @@ package dependencies
 import (
 	migrationrunner "blendermux/common/migration_runner"
 	databasepkg "blendermux/server/database"
-
 	mongoadapter "blendermux/server/database/mongo_adapter"
 	"blendermux/server/database/mongo_adapter/migrations"
 )

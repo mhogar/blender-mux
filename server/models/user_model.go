@@ -3,18 +3,18 @@ package models
 import (
 	"regexp"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID           primitive.ObjectID
+	ID           uuid.UUID
 	Email        string
 	PasswordHash []byte
 }
 
 func CreateNewUser(email string, passwordHash []byte) *User {
 	return &User{
-		ID:           primitive.NewObjectID(),
+		ID:           uuid.New(),
 		Email:        email,
 		PasswordHash: passwordHash,
 	}
@@ -30,7 +30,7 @@ func ValidateUserEmail(email string) ValidateError {
 }
 
 func (u User) Validate() ValidateError {
-	if u.ID == primitive.NilObjectID {
+	if u.ID == uuid.Nil {
 		return CreateValidateError(UserInvalidID, "id cannot be nil")
 	}
 

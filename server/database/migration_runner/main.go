@@ -4,11 +4,9 @@ import (
 	"flag"
 	"log"
 
-	"blendermux/server/config"
-
 	"blendermux/common"
-
 	migrationrunner "blendermux/common/migration_runner"
+	"blendermux/server/config"
 	"blendermux/server/dependencies"
 )
 

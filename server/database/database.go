@@ -3,6 +3,7 @@ package database
 import (
 	migrationrunner "blendermux/common/migration_runner"
 	"blendermux/server/models"
+
 	"github.com/google/uuid"
 )
 
@@ -26,6 +27,6 @@ type UserCRUD interface {
 
 type SessionCRUD interface {
 	CreateSession(session *models.Session) error
-	GetSessionByToken(token uuid.UUID) (*models.Session, error)
+	GetSessionByID(ID uuid.UUID) (*models.Session, error)
 	DeleteSession(session *models.Session) error
 }

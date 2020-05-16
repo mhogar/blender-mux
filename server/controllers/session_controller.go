@@ -7,7 +7,6 @@ import (
 	"blendermux/server/database"
 	"blendermux/server/models"
 
-	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -47,16 +46,17 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 		return
 	}
 
+	session := models.CreateNewSession(user.ID)
+
 	//generate a seesion cookie
-	sID := uuid.New()
 	c := &http.Cookie{
 		Name:  "session",
-		Value: sID.String(),
+		Value: session.ID.String(),
 	}
 	http.SetCookie(w, c)
 
 	//add session to db
-	session := models.CreateNewSession(sID, user.ID)
+
 	con.CreateSession(session)
 
 	//return success
@@ -73,7 +73,7 @@ func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request
 	}
 
 	//validate sID
-	session, _ := con.GetSessionByToken(sID)
+	session, _ := con.GetSessionByID(sID)
 	if session == nil {
 		log.Println("no session found in db with id", sID.String())
 		sendResponse(w, errorResponse{false, "user session is invalid"})
