@@ -14,7 +14,7 @@ jobs:
         - cd server
       install: skip
       script: 
-        - go build
+        - go build server/main.go
     - name: Build Migration Runner
       before_install:
         - cd server/database/migration_runner
