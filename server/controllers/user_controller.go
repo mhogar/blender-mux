@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// UserController handles request to /user endpoints
+// UserController handles requests to "/user" endpoints
 type UserController struct {
 	database.UserCRUD
 }
@@ -24,30 +24,34 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (con *UserController) PostUser(_ http.ResponseWriter, req *http.Request, _ httprouter.Params) (int, interface{}) {
+func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostUserBody
 
 	//parse the body
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(common.ChainError("error parsing PostUser request body", err))
-		return http.StatusBadRequest, createErrorResponse("invalid json body")
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("invalid json body"))
+		return
 	}
 
 	//validate the body fields
 	if body.Username == "" || body.Password == "" {
-		return http.StatusBadRequest, createErrorResponse("username and password cannot be empty")
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("username and password cannot be empty"))
+		return
 	}
 
 	//validate username is unique
 	otherUser, err := con.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by username", err))
-		return createInternalErrorResponse()
+		sendInternalErrorResponse(w)
+		return
 	}
 
 	if otherUser != nil {
-		return http.StatusBadRequest, createErrorResponse("an user with that username already exists")
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("an user with that username already exists"))
+		return
 	}
 
 	//TODO: validate password meets criteria
@@ -56,7 +60,8 @@ func (con *UserController) PostUser(_ http.ResponseWriter, req *http.Request, _ 
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(common.ChainError("error generating password hash", err))
-		return createInternalErrorResponse()
+		sendInternalErrorResponse(w)
+		return
 	}
 
 	//save the user
@@ -64,9 +69,16 @@ func (con *UserController) PostUser(_ http.ResponseWriter, req *http.Request, _ 
 	err = con.CreateUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error saving user", err))
-		return createInternalErrorResponse()
+		sendInternalErrorResponse(w)
+		return
 	}
 
 	//return success
-	return createSuccessResponse()
+	sendSuccessResponse(w)
+}
+
+// DeleteUser handles DELETE requests to "/user"
+func (con *UserController) DeleteUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	//return success
+	sendSuccessResponse(w)
 }

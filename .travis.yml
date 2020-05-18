@@ -14,7 +14,7 @@ jobs:
         - cd server
       install: skip
       script: 
-        - go build server/main.go
+        - go build
     - name: Build Migration Runner
       before_install:
         - cd server/database/migration_runner
@@ -27,8 +27,9 @@ jobs:
         - cd server
       install: skip
       script:
-        - go test ./models/... -v -cover
         - go test ./controllers/... -v -cover
+        - go test ./models/... -v -cover
+        - go test ./router/... -v -cover
     - name: Migration Runner Unit Tests
       before_install:
         - cd common/migration_runner

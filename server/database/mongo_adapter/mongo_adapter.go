@@ -8,21 +8,21 @@ import (
 )
 
 // MongoAdapter is a MongoDB implementation of the Database interface.
-//
-// DbKey is the key that will be used to resolve the database's name.
-//
-// Client is a pointer to mongo driver client.
-//
-// Database is a pointer to the database resolved by the db key.
-//
-// Migrations is a pointer to the Migrations collection.
 type MongoAdapter struct {
 	context    context.Context
 	cancelFunc context.CancelFunc
 	timeout    int
-	DbKey      string
-	Client     *mongo.Client
-	Database   *mongo.Database
+
+	// DbKey is the key that will be used to resolve the database's name.
+	DbKey string
+
+	// Client is a pointer to mongo driver client.
+	Client *mongo.Client
+
+	// Database is a pointer to the database resolved by the db key.
+	Database *mongo.Database
+
+	// Migrations is a pointer to the Migrations collection.
 	Migrations *mongo.Collection
 }
 

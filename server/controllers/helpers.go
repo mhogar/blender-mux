@@ -10,20 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type BasicResponse struct {
-	Success bool `json:"success"`
-}
-
-type ErrorResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
-}
-
-type DataResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data"`
-}
-
 func createErrorResponse(err string) ErrorResponse {
 	return ErrorResponse{
 		Success: false,
@@ -31,15 +17,6 @@ func createErrorResponse(err string) ErrorResponse {
 	}
 }
 
-func createSuccessResponse() (int, BasicResponse) {
-	return http.StatusOK, BasicResponse{Success: true}
-}
-
-func createInternalErrorResponse() (int, ErrorResponse) {
-	return http.StatusInternalServerError, createErrorResponse("an internal error occurred")
-}
-
-// ParseJSONBody parses the body of req and stores the data in v
 func parseJSONBody(r io.Reader, v interface{}) error {
 	decoder := json.NewDecoder(r)
 	err := decoder.Decode(v)
@@ -49,6 +26,27 @@ func parseJSONBody(r io.Reader, v interface{}) error {
 	}
 
 	return nil
+}
+
+func sendResponse(w http.ResponseWriter, status int, res interface{}) {
+	//set the header
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	//write the response
+	encoder := json.NewEncoder(w)
+	err := encoder.Encode(res)
+	if err != nil {
+		log.Panic(err) //panic if can't write response
+	}
+}
+
+func sendSuccessResponse(w http.ResponseWriter) {
+	sendResponse(w, http.StatusOK, BasicResponse{Success: true})
+}
+
+func sendInternalErrorResponse(w http.ResponseWriter) {
+	sendResponse(w, http.StatusInternalServerError, createErrorResponse("an internal error occurred"))
 }
 
 func getUserSession(req *http.Request) (uuid.UUID, error) {

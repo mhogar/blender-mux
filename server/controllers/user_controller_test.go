@@ -1,6 +1,7 @@
 package controllers_test
 
 import (
+	"blendermux/common"
 	"blendermux/server/controllers"
 	databasemocks "blendermux/server/database/mocks"
 	"blendermux/server/models"
@@ -8,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -28,19 +30,21 @@ func (suite *UserControllerTestSuite) SetupTest() {
 
 func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadRequest() {
 	//arrange
+	w := httptest.NewRecorder()
+
 	req, err := http.NewRequest("", "", strings.NewReader("0"))
 	suite.Require().NoError(err)
 
 	//act
-	status, res := suite.UserController.PostUser(nil, req, nil)
+	suite.UserController.PostUser(w, req, nil)
+
+	var res controllers.ErrorResponse
+	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 	//assert
 	suite.Equal(http.StatusBadRequest, status)
-	suite.Require().IsType(controllers.ErrorResponse{}, res)
-
-	errRes := res.(controllers.ErrorResponse)
-	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, "invalid json body")
+	suite.False(res.Success)
+	suite.Contains(res.Error, "invalid json body")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_ReturnsBadRequest() {
@@ -48,6 +52,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 
 	testCase := func() {
 		//arrange
+		w := httptest.NewRecorder()
+
 		bodyStr, err := json.Marshal(body)
 		suite.Require().NoError(err)
 
@@ -55,15 +61,15 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 		suite.Require().NoError(err)
 
 		//act
-		status, res := suite.UserController.PostUser(nil, req, nil)
+		suite.UserController.PostUser(w, req, nil)
+
+		var res controllers.ErrorResponse
+		status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 		//assert
 		suite.Equal(http.StatusBadRequest, status)
-		suite.Require().IsType(controllers.ErrorResponse{}, res)
-
-		errRes := res.(controllers.ErrorResponse)
-		suite.False(errRes.Success)
-		suite.Contains(errRes.Error, "username and password cannot be empty")
+		suite.False(res.Success)
+		suite.Contains(res.Error, "username and password cannot be empty")
 	}
 
 	body = controllers.PostUserBody{
@@ -81,6 +87,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 
 func (suite *UserControllerTestSuite) TestPostUser_WhereGetUserByUsernameReturnsError_ReturnsInternalServerError() {
 	//arrange
+	w := httptest.NewRecorder()
+
 	body := controllers.PostUserBody{
 		Username: "username",
 		Password: "password",
@@ -95,19 +103,21 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereGetUserByUsernameReturns
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, errors.New(""))
 
 	//act
-	status, res := suite.UserController.PostUser(nil, req, nil)
+	suite.UserController.PostUser(w, req, nil)
+
+	var res controllers.ErrorResponse
+	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 	//assert
 	suite.Equal(http.StatusInternalServerError, status)
-	suite.Require().IsType(controllers.ErrorResponse{}, res)
-
-	errRes := res.(controllers.ErrorResponse)
-	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, "an internal error occurred")
+	suite.False(res.Success)
+	suite.Contains(res.Error, "an internal error occurred")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_ReturnsBadRequest() {
 	//arrange
+	w := httptest.NewRecorder()
+
 	body := controllers.PostUserBody{
 		Username: "username",
 		Password: "password",
@@ -122,19 +132,21 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(&models.User{}, nil)
 
 	//act
-	status, res := suite.UserController.PostUser(nil, req, nil)
+	suite.UserController.PostUser(w, req, nil)
+
+	var res controllers.ErrorResponse
+	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 	//assert
 	suite.Equal(http.StatusBadRequest, status)
-	suite.Require().IsType(controllers.ErrorResponse{}, res)
-
-	errRes := res.(controllers.ErrorResponse)
-	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, "username already exists")
+	suite.False(res.Success)
+	suite.Contains(res.Error, "username already exists")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_ReturnsInternalServerError() {
 	//arrange
+	w := httptest.NewRecorder()
+
 	body := controllers.PostUserBody{
 		Username: "username",
 		Password: "password",
@@ -150,21 +162,23 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_R
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(errors.New(""))
 
 	//act
-	status, res := suite.UserController.PostUser(nil, req, nil)
+	suite.UserController.PostUser(w, req, nil)
+
+	var res controllers.ErrorResponse
+	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
 
 	suite.Equal(http.StatusInternalServerError, status)
-	suite.Require().IsType(controllers.ErrorResponse{}, res)
-
-	errRes := res.(controllers.ErrorResponse)
-	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, "an internal error occurred")
+	suite.False(res.Success)
+	suite.Contains(res.Error, "an internal error occurred")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() {
 	//arrange
+	w := httptest.NewRecorder()
+
 	body := controllers.PostUserBody{
 		Username: "username",
 		Password: "password",
@@ -180,7 +194,10 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(nil)
 
 	//act
-	status, res := suite.UserController.PostUser(nil, req, nil)
+	suite.UserController.PostUser(w, req, nil)
+
+	var res controllers.BasicResponse
+	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
@@ -189,8 +206,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	}))
 
 	suite.Equal(http.StatusOK, status)
-	suite.Require().IsType(controllers.BasicResponse{}, res)
-	suite.True(res.(controllers.BasicResponse).Success)
+	suite.True(res.Success)
 }
 
 func TestUserControllerTestSuite(t *testing.T) {

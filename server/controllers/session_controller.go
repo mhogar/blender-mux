@@ -18,7 +18,7 @@ type SessionController struct {
 }
 
 //PostLogin handles Post requests to "/login"
-func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request, _ httprouter.Params) (int, interface{}) {
+func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -28,20 +28,20 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 	err := parseJSONBody(req.Body, &body)
 	if err != nil {
 		log.Println(common.ChainError("error parsing PostLogin request body", err))
-		return http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid json body"}
+		return //http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid json body"}
 	}
 
 	//get the user
 	user, _ := con.GetUserByUsername(body.Email)
 	if user == nil {
-		return http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid email and/or password"}
+		return //http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid email and/or password"}
 	}
 
 	//validate the password
 	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(body.Password))
 	if err != nil {
 		log.Println(common.ChainError("error comparing password hashes", err))
-		return http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid email and/or password"}
+		return //http.StatusBadRequest, ErrorResponse{Success: false, Error: "invalid email and/or password"}
 	}
 
 	session := models.CreateNewSession(user.ID)
@@ -57,29 +57,29 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 	con.CreateSession(session)
 
 	//return success
-	return createSuccessResponse()
+	//return createSuccessResponse()
 }
 
 //PostLogout handles Post requests to "/logout"
-func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request, _ httprouter.Params) (int, interface{}) {
+func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//get the session id from the cookie
 	sID, err := getUserSession(req)
 	if err != nil {
 		log.Println("error getting session from cookie")
-		return http.StatusUnauthorized, createErrorResponse("invalid session")
+		return //http.StatusUnauthorized, createErrorResponse("invalid session")
 	}
 
 	//get the session
 	session, err := con.GetSessionByID(sID)
 	if err != nil {
 		log.Println("no session found with id", sID.String())
-		return http.StatusBadRequest, createErrorResponse("invalid session")
+		return //http.StatusBadRequest, createErrorResponse("invalid session")
 	}
 
 	//check if session was found
 	if session == nil {
 		log.Println("no session found with id", sID.String())
-		return http.StatusUnauthorized, createErrorResponse("invalid session")
+		return //http.StatusUnauthorized, createErrorResponse("invalid session")
 	}
 
 	//delete session from db
@@ -94,5 +94,5 @@ func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request
 	http.SetCookie(w, c)
 
 	//return success
-	return createSuccessResponse()
+	//return createSuccessResponse()
 }

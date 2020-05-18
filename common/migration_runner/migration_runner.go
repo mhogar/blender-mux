@@ -8,16 +8,15 @@ import (
 )
 
 // MigrationCRUD is an interface for preforming CRUD operations on a migration.
-//
-// CreateMigration creates a new migration with the given timestamp and returns any errors.
-//
-// GetLatestTimestamp returns the latest timestamp of all migrations. If no timestamps are found then
-// hasLatest should be false, else it should be true. Also returns any errors encountered.
-//
-// DeleteMigrationByTimestamp deletes the migration with the given timestamp and returns any errors.
 type MigrationCRUD interface {
+	// CreateMigration creates a new migration with the given timestamp and returns any errors.
 	CreateMigration(timestamp string) error
+
+	// GetLatestTimestamp returns the latest timestamp of all migrations. If no timestamps are found then
+	// hasLatest should be false, else it should be true. Also returns any errors encountered.
 	GetLatestTimestamp() (timestamp string, hasLatest bool, err error)
+
+	// DeleteMigrationByTimestamp deletes the migration with the given timestamp and returns any errors.
 	DeleteMigrationByTimestamp(timestamp string) error
 }
 

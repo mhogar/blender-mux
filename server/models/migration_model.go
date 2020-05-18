@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Migration is the migration model.
+// Migration represents the migration model.
 type Migration struct {
 	ID        uuid.UUID `bson:"id"`
 	Timestamp string    `bson:"timestamp"`

@@ -3,9 +3,8 @@ package models
 import "errors"
 
 // Model is an interface for representing a model.
-//
-// Validate should check if a model if valid and return an appropriate ValidateError.
 type Model interface {
+	// Validate should check if a model if valid and return an appropriate ValidateError.
 	Validate() ValidateError
 }
 
