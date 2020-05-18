@@ -21,17 +21,17 @@ type ValidateError struct {
 
 // A ValidateError status.
 const (
-	ModelValid                = iota
-	MigrationInvalidID        = iota
-	MigrationInvalidTimestamp = iota
-	UserInvalidID             = iota
-	UserInvalidEmail          = iota
-	UserInvalidPasswordHash   = iota
+	ValidateErrorModelValid                = iota
+	ValidateErrorMigrationInvalidID        = iota
+	ValidateErrorMigrationInvalidTimestamp = iota
+	ValidateErrorUserInvalidID             = iota
+	ValidateErrorUserInvalidUsername       = iota
+	ValidateErrorUserInvalidPasswordHash   = iota
 )
 
-// CreateModelValidValidateError creates a ValidateError with status ModelValid and no error.
+// CreateModelValidValidateError creates a ValidateError with status ValidateErrorModelValid and no error.
 func CreateModelValidValidateError() ValidateError {
-	return ValidateError{ModelValid, nil}
+	return ValidateError{ValidateErrorModelValid, nil}
 }
 
 // CreateValidateError creates a ValidateError with the provided status and an error with the provided message.

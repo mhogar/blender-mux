@@ -25,7 +25,7 @@ func CreateNewMigration(timestamp string) *Migration {
 func ValidateMigrationTimestamp(timestamp string) ValidateError {
 	matched, _ := regexp.MatchString(`^\d{14}$`, timestamp)
 	if !matched {
-		return CreateValidateError(MigrationInvalidTimestamp, "timestamp is in invalid format")
+		return CreateValidateError(ValidateErrorMigrationInvalidTimestamp, "timestamp is in invalid format")
 	}
 
 	return CreateModelValidValidateError()
@@ -35,11 +35,11 @@ func ValidateMigrationTimestamp(timestamp string) ValidateError {
 // Returns a ValidateError indicating its result.
 func (m Migration) Validate() ValidateError {
 	if m.ID == uuid.Nil {
-		return CreateValidateError(MigrationInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateErrorMigrationInvalidID, "id cannot be nil")
 	}
 
 	err := ValidateMigrationTimestamp(m.Timestamp)
-	if err.Status != ModelValid {
+	if err.Status != ValidateErrorModelValid {
 		return err
 	}
 

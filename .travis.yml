@@ -28,6 +28,7 @@ jobs:
       install: skip
       script:
         - go test ./models/... -v -cover
+        - go test ./controllers/... -v -cover
     - name: Migration Runner Unit Tests
       before_install:
         - cd common/migration_runner

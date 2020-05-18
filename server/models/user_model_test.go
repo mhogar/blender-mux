@@ -15,25 +15,22 @@ type UserTestSuite struct {
 }
 
 func (suite *UserTestSuite) SetupTest() {
-	suite.User = models.CreateNewUser(
-		"email@email.com",
-		[]byte("password"),
-	)
+	suite.User = models.CreateNewUser("username", []byte("password"))
 }
 
 func (suite *UserTestSuite) TestCreateNewUser_CreatesUserWithSuppliedFields() {
 	//arrange
-	email := "this is a test email"
+	username := "this is a test username"
 	hash := []byte("this is a password")
 
 	//act
-	user := models.CreateNewUser(email, hash)
+	user := models.CreateNewUser(username, hash)
 
 	//assert
 	suite.Require().NotNil(user)
 	suite.NotEqual(user.ID, uuid.Nil)
-	suite.EqualValues(user.Email, email)
-	suite.EqualValues(user.PasswordHash, hash)
+	suite.EqualValues(username, user.Username)
+	suite.EqualValues(hash, user.PasswordHash)
 }
 
 func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
@@ -41,7 +38,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(err.Status, models.ModelValid)
+	suite.EqualValues(models.ValidateErrorModelValid, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
@@ -52,42 +49,18 @@ func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(err.Status, models.UserInvalidID)
+	suite.EqualValues(models.ValidateErrorUserInvalidID, err.Status)
 }
 
-func (suite *UserTestSuite) TestValidate_WithVariousInvalidEmails_ReturnsUserInvalidEmail() {
-	var email string
-	testCase := func() {
-		//arrange
-		suite.User.Email = email
+func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUsername() {
+	//arrange
+	suite.User.Username = ""
 
-		//act
-		err := suite.User.Validate()
+	//act
+	err := suite.User.Validate()
 
-		//assert
-		suite.EqualValues(err.Status, models.UserInvalidEmail)
-	}
-
-	email = "@domain.ca"
-	suite.Run("NoUser", testCase)
-
-	email = "test?@domain.ca"
-	suite.Run("UserContainsInvalidChars", testCase)
-
-	email = "domain.ca"
-	suite.Run("No@", testCase)
-
-	email = "test@"
-	suite.Run("NoDomain", testCase)
-
-	email = "test@domain?.ca"
-	suite.Run("DomainContainsInvalidChars", testCase)
-
-	email = "test@domain"
-	suite.Run("NoTopLevelDomain", testCase)
-
-	email = "test@domain.a"
-	suite.Run("TopLevelDomainTooShort", testCase)
+	//assert
+	suite.EqualValues(models.ValidateErrorUserInvalidUsername, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvalidPasswordHash() {
@@ -98,7 +71,7 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvali
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(err.Status, models.UserInvalidPasswordHash)
+	suite.EqualValues(models.ValidateErrorUserInvalidPasswordHash, err.Status)
 }
 
 func TestUserTestSuite(t *testing.T) {

@@ -31,17 +31,17 @@ func main() {
 func configureRoutes() *httprouter.Router {
 	router := httprouter.New()
 
-	accountCon := controllers.AccountController{
+	userCon := controllers.UserController{
 		UserCRUD: dependencies.ResolveDatabase(),
 	}
-	router.POST("/account", accountCon.PostAccount)
+	router.POST("/user", controllers.CreateRequestHandler(userCon.PostUser))
 
-	sessionCon := controllers.SessionController{
-		UserCRUD:    dependencies.ResolveDatabase(),
-		SessionCRUD: dependencies.ResolveDatabase(),
-	}
-	router.POST("/login", sessionCon.PostLogin)
-	router.POST("/logout", sessionCon.PostLogout)
+	// sessionCon := controllers.SessionController{
+	// 	UserCRUD:    dependencies.ResolveDatabase(),
+	// 	SessionCRUD: dependencies.ResolveDatabase(),
+	// }
+	// router.POST("/login", sessionCon.PostLogin)
+	// router.POST("/logout", sessionCon.PostLogout)
 
 	return router
 }

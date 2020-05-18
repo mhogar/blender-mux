@@ -31,7 +31,7 @@ type DBConnection interface {
 
 type UserCRUD interface {
 	CreateUser(user *models.User) error
-	GetUserByEmail(email string) (*models.User, error)
+	GetUserByUsername(username string) (*models.User, error)
 }
 
 type SessionCRUD interface {

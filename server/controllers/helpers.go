@@ -10,18 +10,33 @@ import (
 	"github.com/google/uuid"
 )
 
-type basicResponse struct {
+type BasicResponse struct {
 	Success bool `json:"success"`
 }
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Success bool   `json:"success"`
 	Error   string `json:"error"`
 }
 
-type dataResponse struct {
+type DataResponse struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data"`
+}
+
+func createErrorResponse(err string) ErrorResponse {
+	return ErrorResponse{
+		Success: false,
+		Error:   err,
+	}
+}
+
+func createSuccessResponse() (int, BasicResponse) {
+	return http.StatusOK, BasicResponse{Success: true}
+}
+
+func createInternalErrorResponse() (int, ErrorResponse) {
+	return http.StatusInternalServerError, createErrorResponse("an internal error occurred")
 }
 
 // ParseJSONBody parses the body of req and stores the data in v
@@ -31,19 +46,6 @@ func parseJSONBody(r io.Reader, v interface{}) error {
 	if err != nil {
 		log.Println(err)
 		return errors.New("invalid request body")
-	}
-
-	return nil
-}
-
-func sendResponse(w http.ResponseWriter, res interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-
-	encoder := json.NewEncoder(w)
-	err := encoder.Encode(res)
-	if err != nil {
-		log.Println(err)
-		return errors.New("failed to create response")
 	}
 
 	return nil
