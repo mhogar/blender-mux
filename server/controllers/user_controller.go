@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"blendermux/server/database"
 	"blendermux/server/models"
 
@@ -14,7 +16,7 @@ import (
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	database.UserCRUD
+	UserCRUD database.UserCRUD
 }
 
 // PostUserBody is the struct the body of requests to PostUser should be parsed into
@@ -42,7 +44,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 	}
 
 	//validate username is unique
-	otherUser, err := con.GetUserByUsername(body.Username)
+	otherUser, err := con.UserCRUD.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
@@ -66,7 +68,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 
 	//save the user
 	user := models.CreateNewUser(body.Username, hash)
-	err = con.CreateUser(user)
+	err = con.UserCRUD.CreateUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error saving user", err))
 		sendInternalErrorResponse(w)
@@ -78,7 +80,36 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (con *UserController) DeleteUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (con *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+	//check for id
+	idStr := params.ByName("id")
+	if idStr == "" {
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("id must be present"))
+		return
+	}
+
+	//parse the id
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		log.Println(common.ChainError("error parsing user id", err))
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("id is in invalid format"))
+		return
+	}
+
+	//delete the user
+	result, err := con.UserCRUD.DeleteUser(id)
+	if err != nil {
+		log.Println("error deleting user", err)
+		sendInternalErrorResponse(w)
+		return
+	}
+
+	//check if user was actually deleted
+	if !result {
+		sendResponse(w, http.StatusOK, createErrorResponse("could not delete user"))
+		return
+	}
+
 	//return success
 	sendSuccessResponse(w)
 }

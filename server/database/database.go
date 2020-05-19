@@ -28,9 +28,18 @@ type DBConnection interface {
 	Ping() error
 }
 
+// UserCRUD is an interface for performing CRUD operations on a user
 type UserCRUD interface {
+	// CreateUser creates a new user and returns any errors.
 	CreateUser(user *models.User) error
+
+	// GetUserByUsername fetching the user with the matching username.
+	// If no users users are found, should return nil. Also returns any errors.
 	GetUserByUsername(username string) (*models.User, error)
+
+	// DeleteUser deletes the user with the matching id.
+	// Result should be false if no user was deleted, true otherwise. Also returns any errors.
+	DeleteUser(id uuid.UUID) (result bool, err error)
 }
 
 type SessionCRUD interface {

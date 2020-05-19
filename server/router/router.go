@@ -12,6 +12,7 @@ func CreateRouter(handler controllers.RequestHandler) *httprouter.Router {
 
 	router.PanicHandler = controllers.PanicHandler
 
+	//user routes
 	router.POST("/user", handler.PostUser)
 	router.DELETE("/user/:id", handler.DeleteUser)
 
