@@ -2,9 +2,11 @@ language: go
 os: linux
 dist: bionic
 env:
-  - GO111MODULE=on CFG_ENV=travis
+  - GO111MODULE=on CFG_ENV=travis COVERALLS_PARALLEL=true
 go:
   - 1.14.x
+notifications:
+  webhooks: https://coveralls.io/webhook
 
 jobs:
   include:
@@ -25,22 +27,26 @@ jobs:
       name: Server Unit Tests
       before_install:
         - cd server
-      install: skip
+      install:
+        - go get github.com/mattn/goveralls
       script:
-        - go test ./controllers/... -v -cover
-        - go test ./models/... -v -cover
-        - go test ./router/... -v -cover
+        - go test ./controllers/ ./models/ ./router/ -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: Migration Runner Unit Tests
       before_install:
         - cd common/migration_runner
-      install: skip
+      install:
+        - go get github.com/mattn/goveralls
       script:
-        - go test ./... -v -cover
+        - go test -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
     - name: Mongo Adapter Integration Tests
       services:
         - mongodb
       before_install:
         - cd server/database/mongo_adapter
-      install: skip
+      install:
+        - go get github.com/mattn/goveralls
       script:
-        - go test ./... -v -cover
+        - go test -v -covermode=count -coverprofile=coverage.out
+        - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci

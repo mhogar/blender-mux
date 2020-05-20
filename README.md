@@ -1,1 +1,1 @@
-# blender-mux [![Build Status](https://travis-ci.com/mhogar/blender-mux.svg?branch=master)](https://travis-ci.com/mhogar/blender-mux)
+# blender-mux [![Build Status](https://travis-ci.com/mhogar/blender-mux.svg?branch=master)](https://travis-ci.com/mhogar/blender-mux) [![Coverage Status](https://coveralls.io/repos/github/mhogar/blender-mux/badge.svg)](https://coveralls.io/github/mhogar/blender-mux)
