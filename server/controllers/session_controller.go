@@ -63,7 +63,7 @@ func (con SessionController) PostLogin(w http.ResponseWriter, req *http.Request,
 //PostLogout handles Post requests to "/logout"
 func (con SessionController) PostLogout(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	//get the session id from the cookie
-	sID, err := getUserSession(req)
+	sID, err := getSessionFromRequest(req)
 	if err != nil {
 		log.Println("error getting session from cookie")
 		return //http.StatusUnauthorized, createErrorResponse("invalid session")

@@ -56,7 +56,14 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 		return
 	}
 
-	//TODO: validate password meets criteria
+	//TODO: add unit test
+	//validate password meets criteria
+	verr := models.ValidatePassword(body.Password)
+	if verr.Status != models.ValidateErrorModelValid {
+		log.Println(common.ChainError("error validating password", err))
+		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		return
+	}
 
 	//hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
@@ -99,7 +106,7 @@ func (con *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, pa
 	//delete the user
 	result, err := con.UserCRUD.DeleteUser(id)
 	if err != nil {
-		log.Println("error deleting user", err)
+		log.Println(common.ChainError("error deleting user", err))
 		sendInternalErrorResponse(w)
 		return
 	}
@@ -107,6 +114,89 @@ func (con *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, pa
 	//check if user was actually deleted
 	if !result {
 		sendResponse(w, http.StatusOK, createErrorResponse("could not delete user"))
+		return
+	}
+
+	//return success
+	sendSuccessResponse(w)
+}
+
+// PatchUserPasswordBody is the struct the body of requests to PatchUserPassword should be parsed into
+type PatchUserPasswordBody struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+// PatchUserPassword handles PATCH requests to "/user/password"
+func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	var body PatchUserPasswordBody
+
+	//get the session
+	sID, err := getSessionFromRequest(req)
+	if err != nil {
+		log.Println(common.ChainError("error getting session id from request", err))
+		sendResponse(w, http.StatusBadRequest, "session token not provided or was in invalid format")
+		return
+	}
+
+	//get the user
+	user, err := con.UserCRUD.GetUserBySessionId(sID)
+	if err != nil {
+		log.Println(common.ChainError("error getting user by session id", err))
+		sendInternalErrorResponse(w)
+		return
+	}
+
+	//check user was found
+	if user == nil {
+		sendNotAuthorizedResponse(w)
+		return
+	}
+
+	//parse the body
+	err = parseJSONBody(req.Body, &body)
+	if err != nil {
+		log.Println(common.ChainError("error parsing PatchUserPassword request body", err))
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("invalid json body"))
+		return
+	}
+
+	//validate the body fields
+	if body.OldPassword == "" || body.NewPassword == "" {
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("old password and new password cannot be empty"))
+		return
+	}
+
+	//validate old password
+	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(body.OldPassword))
+	if err != nil {
+		log.Println(common.ChainError("error comparing password hashes", err))
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("old password is invalid"))
+		return
+	}
+
+	//validate new password meets critera
+	verr := models.ValidatePassword(body.NewPassword)
+	if verr.Status != models.ValidateErrorModelValid {
+		log.Println(common.ChainError("error validating password", err))
+		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		return
+	}
+
+	//hash the password
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println(common.ChainError("error generating password hash", err))
+		sendInternalErrorResponse(w)
+		return
+	}
+
+	//update the user
+	user.PasswordHash = hash
+	err = con.UserCRUD.UpdateUser(user)
+	if err != nil {
+		log.Println(common.ChainError("error updating user", err))
+		sendInternalErrorResponse(w)
 		return
 	}
 

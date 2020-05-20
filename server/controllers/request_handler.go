@@ -13,11 +13,14 @@ type RequestHandler interface {
 
 // UserHandler is an interface for handling requests to user routes
 type UserHandler interface {
-	// PostUser handles Post requests to "/user"
+	// PostUser handles POST requests to "/user"
 	PostUser(http.ResponseWriter, *http.Request, httprouter.Params)
 
-	// DeleteUser handles Post requests to "/user"
+	// DeleteUser handles DELETE requests to "/user/:id"
 	DeleteUser(http.ResponseWriter, *http.Request, httprouter.Params)
+
+	// PatchUserPassword handles PATCH requests to "/user/password"
+	PatchUserPassword(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
 // RequestHandle is an implementation of RequestHandler that uses controllers to satisfy the interface's methods

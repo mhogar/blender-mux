@@ -33,9 +33,16 @@ type UserCRUD interface {
 	// CreateUser creates a new user and returns any errors.
 	CreateUser(user *models.User) error
 
-	// GetUserByUsername fetching the user with the matching username.
-	// If no users users are found, should return nil. Also returns any errors.
+	// GetUserBySessionId fetches the user associated with session id.
+	// If no users are found, should return nil. Also returns any errors.
+	GetUserBySessionId(sID uuid.UUID) (*models.User, error)
+
+	// GetUserByUsername fetches the user with the matching username.
+	// If no users are found, should return nil. Also returns any errors.
 	GetUserByUsername(username string) (*models.User, error)
+
+	// CreateUser updates the user and returns any errors.
+	UpdateUser(user *models.User) error
 
 	// DeleteUser deletes the user with the matching id.
 	// Result should be false if no user was deleted, true otherwise. Also returns any errors.

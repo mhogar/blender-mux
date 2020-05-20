@@ -19,6 +19,11 @@ func (_m *RequestHandler) DeleteUser(_a0 http.ResponseWriter, _a1 *http.Request,
 	_m.Called(_a0, _a1, _a2)
 }
 
+// PatchUserPassword provides a mock function with given fields: _a0, _a1, _a2
+func (_m *RequestHandler) PatchUserPassword(_a0 http.ResponseWriter, _a1 *http.Request, _a2 httprouter.Params) {
+	_m.Called(_a0, _a1, _a2)
+}
+
 // PostUser provides a mock function with given fields: _a0, _a1, _a2
 func (_m *RequestHandler) PostUser(_a0 http.ResponseWriter, _a1 *http.Request, _a2 httprouter.Params) {
 	_m.Called(_a0, _a1, _a2)

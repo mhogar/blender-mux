@@ -15,6 +15,7 @@ func CreateRouter(handler controllers.RequestHandler) *httprouter.Router {
 	//user routes
 	router.POST("/user", handler.PostUser)
 	router.DELETE("/user/:id", handler.DeleteUser)
+	router.PATCH("/user/password", handler.PatchUserPassword)
 
 	return router
 }

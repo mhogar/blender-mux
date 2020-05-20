@@ -50,6 +50,29 @@ func (_m *UserCRUD) DeleteUser(id uuid.UUID) (bool, error) {
 	return r0, r1
 }
 
+// GetUserBySessionId provides a mock function with given fields: sID
+func (_m *UserCRUD) GetUserBySessionId(sID uuid.UUID) (*models.User, error) {
+	ret := _m.Called(sID)
+
+	var r0 *models.User
+	if rf, ok := ret.Get(0).(func(uuid.UUID) *models.User); ok {
+		r0 = rf(sID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(uuid.UUID) error); ok {
+		r1 = rf(sID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUserByUsername provides a mock function with given fields: username
 func (_m *UserCRUD) GetUserByUsername(username string) (*models.User, error) {
 	ret := _m.Called(username)
@@ -71,4 +94,18 @@ func (_m *UserCRUD) GetUserByUsername(username string) (*models.User, error) {
 	}
 
 	return r0, r1
+}
+
+// UpdateUser provides a mock function with given fields: user
+func (_m *UserCRUD) UpdateUser(user *models.User) error {
+	ret := _m.Called(user)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*models.User) error); ok {
+		r0 = rf(user)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

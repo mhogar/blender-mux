@@ -6,8 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 func createErrorResponse(err string) ErrorResponse {
@@ -49,16 +47,6 @@ func sendInternalErrorResponse(w http.ResponseWriter) {
 	sendResponse(w, http.StatusInternalServerError, createErrorResponse("an internal error occurred"))
 }
 
-func getUserSession(req *http.Request) (uuid.UUID, error) {
-	c, err := req.Cookie("session")
-	if err != nil {
-		return uuid.Nil, err
-	}
-
-	sID, err := uuid.Parse(c.Value)
-	if err != nil {
-		return uuid.Nil, err
-	}
-
-	return sID, nil
+func sendNotAuthorizedResponse(w http.ResponseWriter) {
+	sendResponse(w, http.StatusUnauthorized, createErrorResponse("not authorized"))
 }

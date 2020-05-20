@@ -88,6 +88,24 @@ func (suite *RouterTestSuite) TestRouter_DeleteUserHandledByCorrectHandleFunctio
 	}))
 }
 
+func (suite *RouterTestSuite) TestRouter_PatchUserPasswordHandledByCorrectHandleFunction() {
+	//arrange
+	server := httptest.NewServer(suite.Router)
+	defer server.Close()
+
+	req, err := http.NewRequest(http.MethodPatch, server.URL+"/user/password", nil)
+	suite.Require().NoError(err)
+
+	suite.RequestHandler.On("PatchUserPassword", mock.Anything, mock.Anything, mock.Anything)
+
+	//act
+	_, err = http.DefaultClient.Do(req)
+	suite.Require().NoError(err)
+
+	//assert
+	suite.RequestHandler.AssertCalled(suite.T(), "PatchUserPassword", mock.Anything, mock.Anything, mock.Anything)
+}
+
 func TestRouterTestSuite(t *testing.T) {
 	suite.Run(t, &RouterTestSuite{})
 }

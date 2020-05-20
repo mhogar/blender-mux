@@ -20,6 +20,12 @@ func CreateNewUser(username string, passwordHash []byte) *User {
 	}
 }
 
+// ValidatePassword validates the password meets the minimum complexity criteria
+func ValidatePassword(password string) ValidateError {
+	//TODO: implement
+	return CreateModelValidValidateError()
+}
+
 // Validate validates the the user model has valid fields.
 // Returns a ValidateError indicating its result.
 func (u User) Validate() ValidateError {
