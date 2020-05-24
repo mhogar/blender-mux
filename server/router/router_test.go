@@ -1,8 +1,6 @@
 package router_test
 
 import (
-	"blendermux/common"
-	"blendermux/server/controllers"
 	controllermocks "blendermux/server/controllers/mocks"
 	"blendermux/server/router"
 	"net/http"
@@ -41,13 +39,8 @@ func (suite *RouterTestSuite) TestRouter_SendsInternalServerErrorOnPanic() {
 	res, err := http.DefaultClient.Do(req)
 	suite.Require().NoError(err)
 
-	var errRes controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, res, &errRes)
-
 	//assert
-	suite.EqualValues(http.StatusInternalServerError, status)
-	suite.False(errRes.Success)
-	suite.Contains(errRes.Error, "an internal error occurred")
+	suite.EqualValues(http.StatusInternalServerError, res.StatusCode)
 }
 
 func (suite *RouterTestSuite) TestRouter_PostUserHandledByCorrectHandleFunction() {
