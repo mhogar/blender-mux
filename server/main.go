@@ -16,7 +16,7 @@ func main() {
 	//create the server
 	server := &http.Server{
 		Addr:    ":8443",
-		Handler: router.CreateRouter(dependencies.ResolveRouteHandler()),
+		Handler: router.CreateRouter(dependencies.ResolveRequestHandler()),
 	}
 
 	fmt.Println("Server is running on port", server.Addr)

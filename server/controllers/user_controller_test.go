@@ -1,8 +1,8 @@
 package controllers_test
 
 import (
-	"blendermux/common"
 	"blendermux/server/controllers"
+	"blendermux/server/controllers/mocks"
 	databasemocks "blendermux/server/database/mocks"
 	"blendermux/server/models"
 	"bytes"
@@ -22,13 +22,24 @@ import (
 
 type UserControllerTestSuite struct {
 	suite.Suite
-	UserCRUDMock   databasemocks.UserCRUD
-	UserController controllers.UserController
+	SessionCookie      *http.Cookie
+	UserCRUDMock       databasemocks.UserCRUD
+	PasswordHasherMock mocks.PasswordHasher
+	UserController     controllers.UserController
 }
 
 func (suite *UserControllerTestSuite) SetupTest() {
+	suite.SessionCookie = &http.Cookie{
+		Name:  "session",
+		Value: uuid.New().String(),
+	}
+
 	suite.UserCRUDMock = databasemocks.UserCRUD{}
-	suite.UserController = controllers.UserController{UserCRUD: &suite.UserCRUDMock}
+	suite.PasswordHasherMock = mocks.PasswordHasher{}
+	suite.UserController = controllers.UserController{
+		UserCRUD:       &suite.UserCRUDMock,
+		PasswordHasher: &suite.PasswordHasherMock,
+	}
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBadRequest() {
@@ -41,13 +52,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidJSONBody_ReturnsBa
 	//act
 	suite.UserController.PostUser(w, req, nil)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.Equal(http.StatusBadRequest, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "invalid json body")
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_ReturnsBadRequest() {
@@ -66,13 +72,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 		//act
 		suite.UserController.PostUser(w, req, nil)
 
-		var res controllers.ErrorResponse
-		status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 		//assert
-		suite.Equal(http.StatusBadRequest, status)
-		suite.False(res.Success)
-		suite.Contains(res.Error, "username and password cannot be empty")
+		assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username and password cannot be empty")
 	}
 
 	body = controllers.PostUserBody{
@@ -108,15 +109,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereGetUserByUsernameReturns
 	//act
 	suite.UserController.PostUser(w, req, nil)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
-
-	suite.Equal(http.StatusInternalServerError, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "an internal error occurred")
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_ReturnsBadRequest() {
@@ -139,15 +133,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 	//act
 	suite.UserController.PostUser(w, req, nil)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
-
-	suite.Equal(http.StatusBadRequest, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "username already exists")
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username already exists")
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_ReturnsInternalServerError() {
@@ -166,23 +153,14 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_R
 	suite.Require().NoError(err)
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(errors.New(""))
 
 	//act
 	suite.UserController.PostUser(w, req, nil)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
-	suite.UserCRUDMock.AssertCalled(suite.T(), "CreateUser", mock.MatchedBy(func(u *models.User) bool {
-		return u.Username == body.Username
-	}))
-
-	suite.Equal(http.StatusInternalServerError, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "an internal error occurred")
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
 func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() {
@@ -194,6 +172,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 		Password: "password",
 	}
 
+	hash := []byte(body.Username)
+
 	bodyStr, err := json.Marshal(body)
 	suite.Require().NoError(err)
 
@@ -201,22 +181,19 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 	suite.Require().NoError(err)
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(hash, nil)
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(nil)
 
 	//act
 	suite.UserController.PostUser(w, req, nil)
 
-	var res controllers.BasicResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
 	suite.UserCRUDMock.AssertCalled(suite.T(), "CreateUser", mock.MatchedBy(func(u *models.User) bool {
-		return u.Username == body.Username
+		return u.Username == body.Username && bytes.Equal(u.PasswordHash, hash)
 	}))
 
-	suite.Equal(http.StatusOK, status)
-	suite.True(res.Success)
+	assertSuccessResponse(&suite.Suite, w.Result())
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithoutIdInParams_ReturnsBadRequest() {
@@ -226,13 +203,8 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithoutIdInParams_ReturnsBa
 	//act
 	suite.UserController.DeleteUser(w, nil, make(httprouter.Params, 0))
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.Equal(http.StatusBadRequest, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "id must be present")
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id must be present")
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_ReturnsBadRequest() {
@@ -247,13 +219,8 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_Retur
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.Equal(http.StatusBadRequest, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "id is in invalid format")
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id is in invalid format")
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsError_ReturnsInternalServerError() {
@@ -270,15 +237,8 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsError
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", id)
-
-	suite.Equal(http.StatusInternalServerError, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "an internal error occurred")
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsFalseResult_ReturnsOKWithError() {
@@ -295,15 +255,10 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsFalse
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", id)
 
-	suite.Equal(http.StatusOK, status)
-	suite.False(res.Success)
-	suite.Contains(res.Error, "could not delete user")
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusOK, "could not delete user")
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK() {
@@ -320,14 +275,92 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK(
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
-	var res controllers.ErrorResponse
-	status := common.ParseResponse(&suite.Suite, w.Result(), &res)
-
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", id)
 
-	suite.Equal(http.StatusOK, status)
-	suite.True(res.Success)
+	assertSuccessResponse(&suite.Suite, w.Result())
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithNoSessionId_ReturnsUnauthorized() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "token not provided")
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidSessionId_ReturnsUnauthorized() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+
+	suite.SessionCookie.Value = "invalid session id"
+	req.AddCookie(suite.SessionCookie)
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid format")
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereGetUserBySessionReturnsError_ReturnsInternalServerError() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(nil, errors.New(""))
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNoUserIsFound_ReturnsUnauthorized() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	req, err := http.NewRequest("", "", nil)
+	suite.Require().NoError(err)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(nil, nil)
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "no user")
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_ReturnsBadRequest() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	req, err := http.NewRequest("", "", strings.NewReader("0"))
+	suite.Require().NoError(err)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "invalid json body")
 }
 
 func TestUserControllerTestSuite(t *testing.T) {

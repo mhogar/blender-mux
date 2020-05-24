@@ -46,7 +46,3 @@ func sendSuccessResponse(w http.ResponseWriter) {
 func sendInternalErrorResponse(w http.ResponseWriter) {
 	sendResponse(w, http.StatusInternalServerError, createErrorResponse("an internal error occurred"))
 }
-
-func sendNotAuthorizedResponse(w http.ResponseWriter) {
-	sendResponse(w, http.StatusUnauthorized, createErrorResponse("not authorized"))
-}

@@ -11,12 +11,12 @@ import (
 	"blendermux/server/models"
 
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	UserCRUD database.UserCRUD
+	UserCRUD       database.UserCRUD
+	PasswordHasher PasswordHasher
 }
 
 // PostUserBody is the struct the body of requests to PostUser should be parsed into
@@ -26,7 +26,7 @@ type PostUserBody struct {
 }
 
 // PostUser handles Post requests to "/user"
-func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PostUserBody
 
 	//parse the body
@@ -44,7 +44,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 	}
 
 	//validate username is unique
-	otherUser, err := con.UserCRUD.GetUserByUsername(body.Username)
+	otherUser, err := c.UserCRUD.GetUserByUsername(body.Username)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by username", err))
 		sendInternalErrorResponse(w)
@@ -66,7 +66,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 	}
 
 	//hash the password
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	hash, err := c.PasswordHasher.HashPassword(body.Password)
 	if err != nil {
 		log.Println(common.ChainError("error generating password hash", err))
 		sendInternalErrorResponse(w)
@@ -75,7 +75,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 
 	//save the user
 	user := models.CreateNewUser(body.Username, hash)
-	err = con.UserCRUD.CreateUser(user)
+	err = c.UserCRUD.CreateUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error saving user", err))
 		sendInternalErrorResponse(w)
@@ -87,7 +87,7 @@ func (con *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ 
 }
 
 // DeleteUser handles DELETE requests to "/user"
-func (con *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
+func (c *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, params httprouter.Params) {
 	//check for id
 	idStr := params.ByName("id")
 	if idStr == "" {
@@ -104,7 +104,7 @@ func (con *UserController) DeleteUser(w http.ResponseWriter, _ *http.Request, pa
 	}
 
 	//delete the user
-	result, err := con.UserCRUD.DeleteUser(id)
+	result, err := c.UserCRUD.DeleteUser(id)
 	if err != nil {
 		log.Println(common.ChainError("error deleting user", err))
 		sendInternalErrorResponse(w)
@@ -128,19 +128,19 @@ type PatchUserPasswordBody struct {
 }
 
 // PatchUserPassword handles PATCH requests to "/user/password"
-func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	var body PatchUserPasswordBody
 
 	//get the session
 	sID, err := getSessionFromRequest(req)
 	if err != nil {
 		log.Println(common.ChainError("error getting session id from request", err))
-		sendResponse(w, http.StatusBadRequest, "session token not provided or was in invalid format")
+		sendResponse(w, http.StatusUnauthorized, createErrorResponse("session token not provided or was in invalid format"))
 		return
 	}
 
 	//get the user
-	user, err := con.UserCRUD.GetUserBySessionId(sID)
+	user, err := c.UserCRUD.GetUserBySessionId(sID)
 	if err != nil {
 		log.Println(common.ChainError("error getting user by session id", err))
 		sendInternalErrorResponse(w)
@@ -149,7 +149,7 @@ func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Re
 
 	//check user was found
 	if user == nil {
-		sendNotAuthorizedResponse(w)
+		sendResponse(w, http.StatusUnauthorized, createErrorResponse("no user for provided session"))
 		return
 	}
 
@@ -168,7 +168,7 @@ func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Re
 	}
 
 	//validate old password
-	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(body.OldPassword))
+	err = c.PasswordHasher.ComparePasswords(user.PasswordHash, body.OldPassword)
 	if err != nil {
 		log.Println(common.ChainError("error comparing password hashes", err))
 		sendResponse(w, http.StatusBadRequest, createErrorResponse("old password is invalid"))
@@ -178,13 +178,13 @@ func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Re
 	//validate new password meets critera
 	verr := models.ValidatePassword(body.NewPassword)
 	if verr.Status != models.ValidateErrorModelValid {
-		log.Println(common.ChainError("error validating password", err))
+		log.Println(common.ChainError("error validating password", verr))
 		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
 	}
 
 	//hash the password
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+	hash, err := c.PasswordHasher.HashPassword(body.NewPassword)
 	if err != nil {
 		log.Println(common.ChainError("error generating password hash", err))
 		sendInternalErrorResponse(w)
@@ -193,7 +193,7 @@ func (con *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Re
 
 	//update the user
 	user.PasswordHash = hash
-	err = con.UserCRUD.UpdateUser(user)
+	err = c.UserCRUD.UpdateUser(user)
 	if err != nil {
 		log.Println(common.ChainError("error updating user", err))
 		sendInternalErrorResponse(w)
