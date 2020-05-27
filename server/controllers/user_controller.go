@@ -15,8 +15,9 @@ import (
 
 // UserController handles requests to "/user" endpoints
 type UserController struct {
-	UserCRUD       database.UserCRUD
-	PasswordHasher PasswordHasher
+	UserCRUD                  database.UserCRUD
+	PasswordHasher            PasswordHasher
+	PasswordCriteriaValidator models.PasswordCriteriaValidator
 }
 
 // PostUserBody is the struct the body of requests to PostUser should be parsed into
@@ -58,8 +59,8 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 
 	//TODO: add unit test
 	//validate password meets criteria
-	verr := models.ValidatePassword(body.Password)
-	if verr.Status != models.ValidateErrorModelValid {
+	err = c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.Password)
+	if err != nil {
 		log.Println(common.ChainError("error validating password", err))
 		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
@@ -176,9 +177,9 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	}
 
 	//validate new password meets critera
-	verr := models.ValidatePassword(body.NewPassword)
-	if verr.Status != models.ValidateErrorModelValid {
-		log.Println(common.ChainError("error validating password", verr))
+	err = c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.NewPassword)
+	if err != nil {
+		log.Println(common.ChainError("error validating password", err))
 		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
 		return
 	}
