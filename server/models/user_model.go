@@ -4,6 +4,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// User ValidateError statuses.
+const (
+	ValidateUserValid               = iota
+	ValidateUserInvalidID           = iota
+	ValidateUserInvalidUsername     = iota
+	ValidateUserInvalidPasswordHash = iota
+)
+
 // User represents the user model.
 type User struct {
 	ID           uuid.UUID
@@ -11,13 +19,18 @@ type User struct {
 	PasswordHash []byte
 }
 
-// CreateNewUser creates a usel model with new id and the provided fields.
+// CreateNewUser creates a user model with new id and the provided fields.
 func CreateNewUser(username string, passwordHash []byte) *User {
 	return &User{
 		ID:           uuid.New(),
 		Username:     username,
 		PasswordHash: passwordHash,
 	}
+}
+
+// CreateValidateUserValid creates a ValidateError with status ValidateUserValid and nil error.
+func CreateValidateUserValid() ValidateError {
+	return ValidateError{ValidateUserValid, nil}
 }
 
 // Validate validates the the user model has valid fields.
@@ -35,5 +48,5 @@ func (u User) Validate() ValidateError {
 		return CreateValidateError(ValidateUserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return CreateValidateModelValid()
+	return CreateValidateUserValid()
 }

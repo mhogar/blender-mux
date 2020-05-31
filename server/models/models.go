@@ -17,21 +17,6 @@ type ValidateError struct {
 	error
 }
 
-// A ValidateError status.
-const (
-	ValidateModelValid                = iota
-	ValidateMigrationInvalidID        = iota
-	ValidateMigrationInvalidTimestamp = iota
-	ValidateUserInvalidID             = iota
-	ValidateUserInvalidUsername       = iota
-	ValidateUserInvalidPasswordHash   = iota
-)
-
-// CreateValidateModelValid creates a ValidateError with status ValidateModelValid and no error.
-func CreateValidateModelValid() ValidateError {
-	return ValidateError{ValidateModelValid, nil}
-}
-
 // CreateValidateError creates a ValidateError with the provided status and an error with the provided message.
 func CreateValidateError(status int, message string) ValidateError {
 	return ValidateError{status, errors.New(message)}

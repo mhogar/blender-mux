@@ -38,7 +38,7 @@ func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelVal
 	err := suite.Migration.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateModelValid, err.Status)
+	suite.EqualValues(models.ValidateMigrationValid, err.Status)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigrationInvalidID() {

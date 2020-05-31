@@ -38,7 +38,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateModelValid, err.Status)
+	suite.EqualValues(models.ValidateUserValid, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {

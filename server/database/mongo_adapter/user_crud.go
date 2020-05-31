@@ -11,7 +11,7 @@ import (
 
 func (db *MongoAdapter) CreateUser(user *models.User) error {
 	verr := user.Validate()
-	if verr.Status != models.ValidateModelValid {
+	if verr.Status != models.ValidateUserValid {
 		return common.ChainError("error validating user model", verr)
 	}
 
