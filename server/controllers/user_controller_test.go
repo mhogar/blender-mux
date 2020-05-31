@@ -89,7 +89,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 	suite.Run("EmptyPassword", testCase)
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WhereGetUserByUsernameReturnsError_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPostUser_WithErrorGettingUserByUsername_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -168,7 +168,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_R
 	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
 }
 
-func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPostUser_WithErrorCreatingUser_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -248,7 +248,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WithIdInInvalidFormat_Retur
 	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "id is in invalid format")
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsError_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorGettingUserById_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -257,7 +257,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsError
 		httprouter.Param{Key: "id", Value: id.String()},
 	}
 
-	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(false, errors.New(""))
+	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
@@ -266,7 +266,7 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsError
 	assertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
-func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsFalseResult_ReturnsOKWithError() {
+func (suite *UserControllerTestSuite) TestDeleteUser_WhereUserIsNotFound_ReturnsBadRequest() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -275,33 +275,52 @@ func (suite *UserControllerTestSuite) TestDeleteUser_WhereDeleteUserReturnsFalse
 		httprouter.Param{Key: "id", Value: id.String()},
 	}
 
-	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(false, nil)
+	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(nil, nil)
 
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", id)
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "user not found")
+}
 
-	assertErrorResponse(&suite.Suite, w.Result(), http.StatusOK, "could not delete user")
+func (suite *UserControllerTestSuite) TestDeleteUser_WithErrorDeletingUser_ReturnsInternalServerError() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	user := models.CreateNewUser("username", []byte("password hash"))
+	params := httprouter.Params{
+		httprouter.Param{Key: "id", Value: user.ID.String()},
+	}
+
+	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(user, nil)
+	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(errors.New(""))
+
+	//act
+	suite.UserController.DeleteUser(w, nil, params)
+
+	//assert
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
 }
 
 func (suite *UserControllerTestSuite) TestDeleteUser_WithValidRequest_ReturnsOK() {
 	//arrange
 	w := httptest.NewRecorder()
 
-	id := uuid.New()
+	user := models.CreateNewUser("username", []byte("password hash"))
 	params := httprouter.Params{
-		httprouter.Param{Key: "id", Value: id.String()},
+		httprouter.Param{Key: "id", Value: user.ID.String()},
 	}
 
-	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(true, nil)
+	suite.UserCRUDMock.On("GetUserByID", mock.Anything).Return(user, nil)
+	suite.UserCRUDMock.On("DeleteUser", mock.Anything).Return(nil)
 
 	//act
 	suite.UserController.DeleteUser(w, nil, params)
 
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", id)
+	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByID", user.ID)
+	suite.UserCRUDMock.AssertCalled(suite.T(), "DeleteUser", user)
 
 	assertSuccessResponse(&suite.Suite, w.Result())
 }
@@ -337,7 +356,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidSessionId
 	assertErrorResponse(&suite.Suite, w.Result(), http.StatusUnauthorized, "invalid format")
 }
 
-func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereGetUserBySessionReturnsError_ReturnsInternalServerError() {
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorGettingUserBySessionId_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
 
@@ -345,7 +364,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereGetUserBySessio
 	suite.Require().NoError(err)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(nil, errors.New(""))
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(nil, errors.New(""))
 
 	//act
 	suite.UserController.PatchUserPassword(w, req, nil)
@@ -362,7 +381,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNoUserIsFound_R
 	suite.Require().NoError(err)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(nil, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(nil, nil)
 
 	//act
 	suite.UserController.PatchUserPassword(w, req, nil)
@@ -379,7 +398,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidJSONBody_
 	suite.Require().NoError(err)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 
 	//act
 	suite.UserController.PatchUserPassword(w, req, nil)
@@ -398,7 +417,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyField
 		req := createRequestWithJSONBody(&suite.Suite, body)
 		req.AddCookie(suite.SessionCookie)
 
-		suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+		suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 
 		//act
 		suite.UserController.PatchUserPassword(w, req, nil)
@@ -432,7 +451,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsIn
 	req := createRequestWithJSONBody(&suite.Suite, body)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
 
 	//act
@@ -454,7 +473,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoes
 	req := createRequestWithJSONBody(&suite.Suite, body)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(errors.New(""))
 
@@ -477,7 +496,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewP
 	req := createRequestWithJSONBody(&suite.Suite, body)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
@@ -501,7 +520,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorUpdatingUse
 	req := createRequestWithJSONBody(&suite.Suite, body)
 	req.AddCookie(suite.SessionCookie)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(&models.User{}, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
@@ -530,7 +549,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_Ret
 	newPasswordHash := []byte("hashed new password")
 	user := models.CreateNewUser("username", oldPasswordHash)
 
-	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(user, nil)
+	suite.UserCRUDMock.On("GetUserBySessionID", mock.Anything).Return(user, nil)
 	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(newPasswordHash, nil)
@@ -540,7 +559,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_Ret
 	suite.UserController.PatchUserPassword(w, req, nil)
 
 	//assert
-	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserBySessionId", suite.SID)
+	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserBySessionID", suite.SID)
 	suite.PasswordHasherMock.AssertCalled(suite.T(), "ComparePasswords", oldPasswordHash, body.OldPassword)
 	suite.PasswordCriteriaValidatorMock.AssertCalled(suite.T(), "ValidatePasswordCriteria", body.NewPassword)
 	suite.PasswordHasherMock.AssertCalled(suite.T(), "HashPassword", body.NewPassword)

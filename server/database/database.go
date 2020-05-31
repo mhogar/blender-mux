@@ -17,13 +17,13 @@ type Database interface {
 
 // DBConnection is an interface for controlling the connection to the database.
 type DBConnection interface {
-	// OpenConnection should open the connection to the database. Returns any errors.
+	// OpenConnection opens the connection to the database. Returns any errors.
 	OpenConnection() error
 
-	// CloseConnection should close the connection to the database and cleanup associated resources. Returns any errors.
+	// CloseConnection closes the connection to the database and cleanup associated resources. Returns any errors.
 	CloseConnection() error
 
-	// Ping should ping the database to verify it can still be reached.
+	// Ping pings the database to verify it can be reached.
 	// Returns an error if the database can't be reached or if any other errors occur.
 	Ping() error
 }
@@ -33,20 +33,24 @@ type UserCRUD interface {
 	// CreateUser creates a new user and returns any errors.
 	CreateUser(user *models.User) error
 
-	// GetUserBySessionId fetches the user associated with session id.
-	// If no users are found, should return nil. Also returns any errors.
-	GetUserBySessionId(sID uuid.UUID) (*models.User, error)
+	// GetUserByID fetches the user associated with id.
+	// If no users are found, returns nil user. Also returns any errors.
+	GetUserByID(ID uuid.UUID) (*models.User, error)
+
+	// GetUserBySessionID fetches the user associated with session id.
+	// If no users are found, returns nil user. Also returns any errors.
+	GetUserBySessionID(sID uuid.UUID) (*models.User, error)
 
 	// GetUserByUsername fetches the user with the matching username.
-	// If no users are found, should return nil. Also returns any errors.
+	// If no users are found, returns nil user. Also returns any errors.
 	GetUserByUsername(username string) (*models.User, error)
 
 	// CreateUser updates the user and returns any errors.
 	UpdateUser(user *models.User) error
 
-	// DeleteUser deletes the user with the matching id.
-	// Result should be false if no user was deleted, true otherwise. Also returns any errors.
-	DeleteUser(id uuid.UUID) (result bool, err error)
+	// DeleteUser deletes the user associated with the provided user model.
+	// Returns an error if the user could not be deleted, as well as any other errors.
+	DeleteUser(user *models.User) error
 }
 
 type SessionCRUD interface {
