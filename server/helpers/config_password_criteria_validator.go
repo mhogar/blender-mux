@@ -17,14 +17,14 @@ func (ConfigPasswordCriteriaValidator) ValidatePasswordCriteria(password string)
 
 	//validate min length
 	if len(password) < criteria.MinLength {
-		return createValidatePasswordCriteriaError(ValidatePasswordCriteriaTooShort, fmt.Sprintf("password must be at least %d characters", criteria.MinLength))
+		return CreateValidatePasswordCriteriaError(ValidatePasswordCriteriaTooShort, fmt.Sprintf("password must be at least %d characters", criteria.MinLength))
 	}
 
 	//validate has lower case letter if required
 	if criteria.RequireLowerCase {
 		matched, _ := regexp.Match("[a-z]", []byte(password))
 		if !matched {
-			return createValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingLowerCaseLetter, "password must have at least one lower case letter")
+			return CreateValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingLowerCaseLetter, "password must have at least one lower case letter")
 		}
 	}
 
@@ -32,7 +32,7 @@ func (ConfigPasswordCriteriaValidator) ValidatePasswordCriteria(password string)
 	if criteria.RequireUpperCase {
 		matched, _ := regexp.Match("[A-Z]", []byte(password))
 		if !matched {
-			return createValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingUpperCaseLetter, "password must have at least one upper case letter")
+			return CreateValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingUpperCaseLetter, "password must have at least one upper case letter")
 		}
 	}
 
@@ -40,7 +40,7 @@ func (ConfigPasswordCriteriaValidator) ValidatePasswordCriteria(password string)
 	if criteria.RequireDigit {
 		matched, _ := regexp.Match("\\d", []byte(password))
 		if !matched {
-			return createValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingDigit, "password must have at least one digit")
+			return CreateValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingDigit, "password must have at least one digit")
 		}
 	}
 
@@ -48,9 +48,9 @@ func (ConfigPasswordCriteriaValidator) ValidatePasswordCriteria(password string)
 	if criteria.RequireSymbol {
 		matched, _ := regexp.Match("[^\\w\\s]", []byte(password))
 		if !matched {
-			return createValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingSymbol, "password must have at least one symbol")
+			return CreateValidatePasswordCriteriaError(ValidatePasswordCriteriaMissingSymbol, "password must have at least one symbol")
 		}
 	}
 
-	return createValidatePasswordCriteriaValid()
+	return CreateValidatePasswordCriteriaValid()
 }

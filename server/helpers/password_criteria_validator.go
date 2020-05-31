@@ -27,14 +27,16 @@ type PasswordCriteriaValidator interface {
 	ValidatePasswordCriteria(password string) ValidatePasswordCriteriaError
 }
 
-func createValidatePasswordCriteriaValid() ValidatePasswordCriteriaError {
+// CreateValidatePasswordCriteriaValid creates a ValidatePasswordCriteriaError with a ValidatePasswordCriteriaValid status and nil err.
+func CreateValidatePasswordCriteriaValid() ValidatePasswordCriteriaError {
 	return ValidatePasswordCriteriaError{
 		Status: ValidatePasswordCriteriaValid,
 		error:  nil,
 	}
 }
 
-func createValidatePasswordCriteriaError(status int, message string) ValidatePasswordCriteriaError {
+// CreateValidatePasswordCriteriaError creates a ValidatePasswordCriteriaError with the provided status and error message.
+func CreateValidatePasswordCriteriaError(status int, message string) ValidatePasswordCriteriaError {
 	return ValidatePasswordCriteriaError{
 		Status: status,
 		error:  errors.New(message),

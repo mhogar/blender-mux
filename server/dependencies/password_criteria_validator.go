@@ -12,7 +12,7 @@ var passwordCriteriaValidator helpers.PasswordCriteriaValidator
 // Only the first call to this function will create a new PasswordCriteriaValidator, after which it will be retrieved from the cache.
 func ResolvePasswordCriteriaValidator() helpers.PasswordCriteriaValidator {
 	passwordCriteriaValidatorOnce.Do(func() {
-		passwordCriteriaValidator = helpers.StandardPasswordCriteriaValidator{}
+		passwordCriteriaValidator = helpers.ConfigPasswordCriteriaValidator{}
 	})
 	return passwordCriteriaValidator
 }
