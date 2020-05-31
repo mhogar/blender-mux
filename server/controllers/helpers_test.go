@@ -2,11 +2,22 @@ package controllers_test
 
 import (
 	"blendermux/server/controllers"
+	"bytes"
 	"encoding/json"
 	"net/http"
 
 	"github.com/stretchr/testify/suite"
 )
+
+func createRequestWithJSONBody(suite *suite.Suite, body interface{}) *http.Request {
+	bodyStr, err := json.Marshal(body)
+	suite.Require().NoError(err)
+
+	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
+	suite.Require().NoError(err)
+
+	return req
+}
 
 func parseResponse(suite *suite.Suite, res *http.Response, body interface{}) (status int) {
 	decoder := json.NewDecoder(res.Body)

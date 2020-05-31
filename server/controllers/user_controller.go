@@ -57,12 +57,11 @@ func (c *UserController) PostUser(w http.ResponseWriter, req *http.Request, _ ht
 		return
 	}
 
-	//TODO: add unit test
 	//validate password meets criteria
 	err = c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.Password)
 	if err != nil {
 		log.Println(common.ChainError("error validating password", err))
-		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("password does not meet minimum criteria"))
 		return
 	}
 
@@ -180,7 +179,7 @@ func (c *UserController) PatchUserPassword(w http.ResponseWriter, req *http.Requ
 	err = c.PasswordCriteriaValidator.ValidatePasswordCriteria(body.NewPassword)
 	if err != nil {
 		log.Println(common.ChainError("error validating password", err))
-		sendResponse(w, http.StatusBadRequest, "password does not meet minimum criteria")
+		sendResponse(w, http.StatusBadRequest, createErrorResponse("password does not meet minimum criteria"))
 		return
 	}
 

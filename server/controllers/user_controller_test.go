@@ -7,7 +7,6 @@ import (
 	"blendermux/server/models"
 	modelmocks "blendermux/server/models/mocks"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -23,6 +22,7 @@ import (
 
 type UserControllerTestSuite struct {
 	suite.Suite
+	SID                           uuid.UUID
 	SessionCookie                 *http.Cookie
 	UserCRUDMock                  databasemocks.UserCRUD
 	PasswordHasherMock            mocks.PasswordHasher
@@ -31,9 +31,10 @@ type UserControllerTestSuite struct {
 }
 
 func (suite *UserControllerTestSuite) SetupTest() {
+	suite.SID = uuid.New()
 	suite.SessionCookie = &http.Cookie{
 		Name:  "session",
-		Value: uuid.New().String(),
+		Value: suite.SID.String(),
 	}
 
 	suite.UserCRUDMock = databasemocks.UserCRUD{}
@@ -66,12 +67,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithInvalidBodyFields_Returns
 	testCase := func() {
 		//arrange
 		w := httptest.NewRecorder()
-
-		bodyStr, err := json.Marshal(body)
-		suite.Require().NoError(err)
-
-		req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-		suite.Require().NoError(err)
+		req := createRequestWithJSONBody(&suite.Suite, body)
 
 		//act
 		suite.UserController.PostUser(w, req, nil)
@@ -101,12 +97,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereGetUserByUsernameReturns
 		Username: "username",
 		Password: "password",
 	}
-
-	bodyStr, err := json.Marshal(body)
-	suite.Require().NoError(err)
-
-	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-	suite.Require().NoError(err)
+	req := createRequestWithJSONBody(&suite.Suite, body)
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, errors.New(""))
 
@@ -125,12 +116,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 		Username: "username",
 		Password: "password",
 	}
-
-	bodyStr, err := json.Marshal(body)
-	suite.Require().NoError(err)
-
-	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-	suite.Require().NoError(err)
+	req := createRequestWithJSONBody(&suite.Suite, body)
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(&models.User{}, nil)
 
@@ -141,6 +127,47 @@ func (suite *UserControllerTestSuite) TestPostUser_WithNonUniqueUsername_Returns
 	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "username already exists")
 }
 
+func (suite *UserControllerTestSuite) TestPostUser_WherePasswordDoesNotMeetCriteria_ReturnsBadRequest() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PostUserBody{
+		Username: "username",
+		Password: "password",
+	}
+	req := createRequestWithJSONBody(&suite.Suite, body)
+
+	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
+
+	//act
+	suite.UserController.PostUser(w, req, nil)
+
+	//assert
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
+}
+
+func (suite *UserControllerTestSuite) TestPostUser_WithErrorHashingNewPassword_ReturnsInternalServerError() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PostUserBody{
+		Username: "username",
+		Password: "password",
+	}
+	req := createRequestWithJSONBody(&suite.Suite, body)
+
+	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(errors.New(""))
+
+	//act
+	suite.UserController.PostUser(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
+}
+
 func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_ReturnsInternalServerError() {
 	//arrange
 	w := httptest.NewRecorder()
@@ -149,12 +176,7 @@ func (suite *UserControllerTestSuite) TestPostUser_WhereCreateUserReturnsError_R
 		Username: "username",
 		Password: "password",
 	}
-
-	bodyStr, err := json.Marshal(body)
-	suite.Require().NoError(err)
-
-	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-	suite.Require().NoError(err)
+	req := createRequestWithJSONBody(&suite.Suite, body)
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
 	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
@@ -176,18 +198,13 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 		Username: "username",
 		Password: "password",
 	}
+	req := createRequestWithJSONBody(&suite.Suite, body)
 
-	hash := []byte(body.Username)
-
-	bodyStr, err := json.Marshal(body)
-	suite.Require().NoError(err)
-
-	req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-	suite.Require().NoError(err)
+	hash := []byte("password hash")
 
 	suite.UserCRUDMock.On("GetUserByUsername", body.Username).Return(nil, nil)
-	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(hash, nil)
 	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(hash, nil)
 	suite.UserCRUDMock.On("CreateUser", mock.Anything).Return(nil)
 
 	//act
@@ -195,6 +212,8 @@ func (suite *UserControllerTestSuite) TestPostUser_WithValidRequest_ReturnsOK() 
 
 	//assert
 	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserByUsername", body.Username)
+	suite.PasswordCriteriaValidatorMock.AssertCalled(suite.T(), "ValidatePasswordCriteria", body.Password)
+	suite.PasswordHasherMock.AssertCalled(suite.T(), "HashPassword", body.Password)
 	suite.UserCRUDMock.AssertCalled(suite.T(), "CreateUser", mock.MatchedBy(func(u *models.User) bool {
 		return u.Username == body.Username && bytes.Equal(u.PasswordHash, hash)
 	}))
@@ -376,11 +395,7 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyField
 		//arrange
 		w := httptest.NewRecorder()
 
-		bodyStr, err := json.Marshal(body)
-		suite.Require().NoError(err)
-
-		req, err := http.NewRequest("", "", bytes.NewReader(bodyStr))
-		suite.Require().NoError(err)
+		req := createRequestWithJSONBody(&suite.Suite, body)
 		req.AddCookie(suite.SessionCookie)
 
 		suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
@@ -403,6 +418,137 @@ func (suite *UserControllerTestSuite) TestPatchUserPassword_WithInvalidBodyField
 		NewPassword: "",
 	}
 	suite.Run("EmptyPassword", testCase)
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereOldPasswordIsInvalid_ReturnsBadRequest() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+
+	req := createRequestWithJSONBody(&suite.Suite, body)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(errors.New(""))
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "old password is invalid")
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WhereNewPasswordDoesNotMeetCriteria_ReturnsBadRequest() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+
+	req := createRequestWithJSONBody(&suite.Suite, body)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(errors.New(""))
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertErrorResponse(&suite.Suite, w.Result(), http.StatusBadRequest, "password does not meet minimum criteria")
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorHashingNewPassword_ReturnsInternalServerError() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+
+	req := createRequestWithJSONBody(&suite.Suite, body)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, errors.New(""))
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithErrorUpdatingUser_ReturnsInternalServerError() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+
+	req := createRequestWithJSONBody(&suite.Suite, body)
+	req.AddCookie(suite.SessionCookie)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(&models.User{}, nil)
+	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(nil, nil)
+	suite.UserCRUDMock.On("UpdateUser", mock.Anything).Return(errors.New(""))
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	assertInternalServerErrorResponse(&suite.Suite, w.Result())
+}
+
+func (suite *UserControllerTestSuite) TestPatchUserPassword_WithValidRequest_ReturnsOK() {
+	//arrange
+	w := httptest.NewRecorder()
+
+	body := controllers.PatchUserPasswordBody{
+		OldPassword: "old password",
+		NewPassword: "new password",
+	}
+
+	req := createRequestWithJSONBody(&suite.Suite, body)
+	req.AddCookie(suite.SessionCookie)
+
+	oldPasswordHash := []byte("hashed old password")
+	newPasswordHash := []byte("hashed new password")
+	user := models.CreateNewUser("username", oldPasswordHash)
+
+	suite.UserCRUDMock.On("GetUserBySessionId", mock.Anything).Return(user, nil)
+	suite.PasswordHasherMock.On("ComparePasswords", mock.Anything, mock.Anything).Return(nil)
+	suite.PasswordCriteriaValidatorMock.On("ValidatePasswordCriteria", mock.Anything).Return(nil)
+	suite.PasswordHasherMock.On("HashPassword", mock.Anything).Return(newPasswordHash, nil)
+	suite.UserCRUDMock.On("UpdateUser", mock.Anything).Return(nil)
+
+	//act
+	suite.UserController.PatchUserPassword(w, req, nil)
+
+	//assert
+	suite.UserCRUDMock.AssertCalled(suite.T(), "GetUserBySessionId", suite.SID)
+	suite.PasswordHasherMock.AssertCalled(suite.T(), "ComparePasswords", oldPasswordHash, body.OldPassword)
+	suite.PasswordCriteriaValidatorMock.AssertCalled(suite.T(), "ValidatePasswordCriteria", body.NewPassword)
+	suite.PasswordHasherMock.AssertCalled(suite.T(), "HashPassword", body.NewPassword)
+	suite.UserCRUDMock.AssertCalled(suite.T(), "UpdateUser", mock.MatchedBy(func(u *models.User) bool {
+		return bytes.Equal(u.PasswordHash, newPasswordHash)
+	}))
+
+	assertSuccessResponse(&suite.Suite, w.Result())
 }
 
 func TestUserControllerTestSuite(t *testing.T) {
