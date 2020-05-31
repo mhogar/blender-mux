@@ -10,4 +10,5 @@ func InitConfig() {
 	viper.BindEnv("env")
 
 	initDatabaseConfig()
+	initPasswordCriteriaConfig()
 }

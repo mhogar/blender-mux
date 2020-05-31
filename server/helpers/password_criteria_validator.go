@@ -1,16 +1,42 @@
 package helpers
 
+import "errors"
+
+// ValidatePasswordCriteria statuses
+const (
+	ValidatePasswordCriteriaValid                  = iota
+	ValidatePasswordCriteriaTooShort               = iota
+	ValidatePasswordCriteriaMissingLowerCaseLetter = iota
+	ValidatePasswordCriteriaMissingUpperCaseLetter = iota
+	ValidatePasswordCriteriaMissingDigit           = iota
+	ValidatePasswordCriteriaMissingSymbol          = iota
+)
+
+// ValidatePasswordCriteriaError is a struct for encapsulating a validate password criteria status and internal error.
+type ValidatePasswordCriteriaError struct {
+	// Status is an int that describes the type of error.
+	Status int
+
+	// error is the internal error object.
+	error
+}
+
 // PasswordCriteriaValidator is an interface for validating a password against criteria.
 type PasswordCriteriaValidator interface {
 	// ValidatePasswordCriteria validates the password meets the minimum complexity criteria.
-	ValidatePasswordCriteria(password string) error
+	ValidatePasswordCriteria(password string) ValidatePasswordCriteriaError
 }
 
-// StandardPasswordCriteriaValidator is an implementation of PasswordCriteriaValidator that uses standard criteria.
-type StandardPasswordCriteriaValidator struct{}
+func createValidatePasswordCriteriaValid() ValidatePasswordCriteriaError {
+	return ValidatePasswordCriteriaError{
+		Status: ValidatePasswordCriteriaValid,
+		error:  nil,
+	}
+}
 
-// ValidatePasswordCriteria validates the password meets the standard minimum complexity criteria.
-func (StandardPasswordCriteriaValidator) ValidatePasswordCriteria(password string) error {
-	//TODO: implement
-	return nil
+func createValidatePasswordCriteriaError(status int, message string) ValidatePasswordCriteriaError {
+	return ValidatePasswordCriteriaError{
+		Status: status,
+		error:  errors.New(message),
+	}
 }
