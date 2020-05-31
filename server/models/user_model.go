@@ -1,47 +1,52 @@
 package models
 
 import (
-	"regexp"
-
 	"github.com/google/uuid"
 )
 
+// User ValidateError statuses.
+const (
+	ValidateUserValid               = iota
+	ValidateUserInvalidID           = iota
+	ValidateUserInvalidUsername     = iota
+	ValidateUserInvalidPasswordHash = iota
+)
+
+// User represents the user model.
 type User struct {
 	ID           uuid.UUID
-	Email        string
+	Username     string
 	PasswordHash []byte
 }
 
-func CreateNewUser(email string, passwordHash []byte) *User {
+// CreateNewUser creates a user model with new id and the provided fields.
+func CreateNewUser(username string, passwordHash []byte) *User {
 	return &User{
 		ID:           uuid.New(),
-		Email:        email,
+		Username:     username,
 		PasswordHash: passwordHash,
 	}
 }
 
-func ValidateUserEmail(email string) ValidateError {
-	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]{2,}$`, email)
-	if !matched {
-		return CreateValidateError(UserInvalidEmail, "email is in invalid format")
-	}
-
-	return CreateModelValidValidateError()
+// CreateValidateUserValid creates a ValidateError with status ValidateUserValid and nil error.
+func CreateValidateUserValid() ValidateError {
+	return ValidateError{ValidateUserValid, nil}
 }
 
+// Validate validates the the user model has valid fields.
+// Returns a ValidateError indicating its result.
 func (u User) Validate() ValidateError {
 	if u.ID == uuid.Nil {
-		return CreateValidateError(UserInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateUserInvalidID, "id cannot be nil")
 	}
 
-	err := ValidateUserEmail(u.Email)
-	if err.Status != ModelValid {
-		return err
+	if u.Username == "" {
+		return CreateValidateError(ValidateUserInvalidUsername, "username cannot be empty")
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return CreateValidateError(UserInvalidPasswordHash, "password hash cannot be nil")
+		return CreateValidateError(ValidateUserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return CreateModelValidValidateError()
+	return CreateValidateUserValid()
 }

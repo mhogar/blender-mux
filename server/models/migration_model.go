@@ -6,7 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// Migration is the migration model.
+// Migration ValidateError statuses.
+const (
+	ValidateMigrationValid            = iota
+	ValidateMigrationInvalidID        = iota
+	ValidateMigrationInvalidTimestamp = iota
+)
+
+// Migration represents the migration model.
 type Migration struct {
 	ID        uuid.UUID `bson:"id"`
 	Timestamp string    `bson:"timestamp"`
@@ -20,28 +27,33 @@ func CreateNewMigration(timestamp string) *Migration {
 	}
 }
 
+// CreateValidateMigrationValid creates a ValidateError with status ValidateMigrationValid and nil error.
+func CreateValidateMigrationValid() ValidateError {
+	return ValidateError{ValidateMigrationValid, nil}
+}
+
 // ValidateMigrationTimestamp validates the given timestamp is in a valid format.
 // Returns a ValidateError indicating its result.
 func ValidateMigrationTimestamp(timestamp string) ValidateError {
 	matched, _ := regexp.MatchString(`^\d{14}$`, timestamp)
 	if !matched {
-		return CreateValidateError(MigrationInvalidTimestamp, "timestamp is in invalid format")
+		return CreateValidateError(ValidateMigrationInvalidTimestamp, "timestamp is in invalid format")
 	}
 
-	return CreateModelValidValidateError()
+	return CreateValidateMigrationValid()
 }
 
 // Validate validates the migration is a valid migration model.
 // Returns a ValidateError indicating its result.
 func (m Migration) Validate() ValidateError {
 	if m.ID == uuid.Nil {
-		return CreateValidateError(MigrationInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateMigrationInvalidID, "id cannot be nil")
 	}
 
 	err := ValidateMigrationTimestamp(m.Timestamp)
-	if err.Status != ModelValid {
+	if err.Status != ValidateMigrationValid {
 		return err
 	}
 
-	return CreateModelValidValidateError()
+	return CreateValidateMigrationValid()
 }

@@ -62,7 +62,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_MigrationIsAddedToDatab
 	cancel()
 
 	suite.Require().NoError(err)
-	suite.EqualValues(count, 0)
+	suite.EqualValues(0, count)
 
 	//insert migration and verify no err
 	err = suite.DB.CreateMigration(timestamp)
@@ -74,7 +74,7 @@ func (suite *MigrationCRUDTestSuite) TestCreateMigration_MigrationIsAddedToDatab
 	cancel()
 
 	suite.Require().NoError(err)
-	suite.EqualValues(count, 1)
+	suite.EqualValues(1, count)
 }
 
 func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_MigrationIsRemovedFromDatabase() {
@@ -100,7 +100,7 @@ func (suite *MigrationCRUDTestSuite) TestDeleteMigrationByTimestamp_MigrationIsR
 	cancel()
 
 	suite.Require().NoError(err)
-	suite.EqualValues(newCount, oldCount-1)
+	suite.EqualValues(oldCount-1, newCount)
 }
 
 func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoTimestampsInDatabase_ReturnsNoHasLatest() {
@@ -110,7 +110,7 @@ func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_WithNoTimestampsInDa
 	cancel()
 
 	suite.Require().NoError(err)
-	suite.EqualValues(count, 0)
+	suite.EqualValues(0, count)
 
 	//act
 	_, hasLatest, err := suite.DB.GetLatestTimestamp()
@@ -135,7 +135,7 @@ func (suite *MigrationCRUDTestSuite) TestGetLatestTimestamp_LatestTimestampIsRet
 
 	//assert
 	suite.Require().NoError(err)
-	suite.EqualValues(timestamp, timestamps[1])
+	suite.EqualValues(timestamps[1], timestamp)
 	suite.True(hasLatest)
 }
 

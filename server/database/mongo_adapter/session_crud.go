@@ -11,7 +11,7 @@ import (
 
 func (db *MongoAdapter) CreateSession(session *models.Session) error {
 	verr := session.Validate()
-	if verr.Status != models.ModelValid {
+	if verr.Status != models.ValidateSessionValid {
 		return common.ChainError("error validating session model", verr)
 	}
 
