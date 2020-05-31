@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"blendermux/server/database"
+	"blendermux/server/helpers"
 	"blendermux/server/models"
 
 	"github.com/julienschmidt/httprouter"
@@ -16,8 +17,8 @@ import (
 // UserController handles requests to "/user" endpoints
 type UserController struct {
 	UserCRUD                  database.UserCRUD
-	PasswordHasher            PasswordHasher
-	PasswordCriteriaValidator models.PasswordCriteriaValidator
+	PasswordHasher            helpers.PasswordHasher
+	PasswordCriteriaValidator helpers.PasswordCriteriaValidator
 }
 
 // PostUserBody is the struct the body of requests to PostUser should be parsed into

@@ -1,4 +1,4 @@
-package models
+package helpers
 
 // PasswordCriteriaValidator is an interface for validating a password against criteria.
 type PasswordCriteriaValidator interface {

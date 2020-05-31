@@ -1,18 +1,18 @@
 package dependencies
 
 import (
-	"blendermux/server/models"
+	"blendermux/server/helpers"
 	"sync"
 )
 
 var passwordCriteriaValidatorOnce sync.Once
-var passwordCriteriaValidator models.PasswordCriteriaValidator
+var passwordCriteriaValidator helpers.PasswordCriteriaValidator
 
 // ResolvePasswordCriteriaValidator resolves the PasswordCriteriaValidator dependency.
 // Only the first call to this function will create a new PasswordCriteriaValidator, after which it will be retrieved from the cache.
-func ResolvePasswordCriteriaValidator() models.PasswordCriteriaValidator {
+func ResolvePasswordCriteriaValidator() helpers.PasswordCriteriaValidator {
 	passwordCriteriaValidatorOnce.Do(func() {
-		passwordCriteriaValidator = models.StandardPasswordCriteriaValidator{}
+		passwordCriteriaValidator = helpers.StandardPasswordCriteriaValidator{}
 	})
 	return passwordCriteriaValidator
 }

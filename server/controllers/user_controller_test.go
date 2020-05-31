@@ -2,10 +2,9 @@ package controllers_test
 
 import (
 	"blendermux/server/controllers"
-	"blendermux/server/controllers/mocks"
 	databasemocks "blendermux/server/database/mocks"
+	helpermocks "blendermux/server/helpers/mocks"
 	"blendermux/server/models"
-	modelmocks "blendermux/server/models/mocks"
 	"bytes"
 	"errors"
 	"net/http"
@@ -25,8 +24,8 @@ type UserControllerTestSuite struct {
 	SID                           uuid.UUID
 	SessionCookie                 *http.Cookie
 	UserCRUDMock                  databasemocks.UserCRUD
-	PasswordHasherMock            mocks.PasswordHasher
-	PasswordCriteriaValidatorMock modelmocks.PasswordCriteriaValidator
+	PasswordHasherMock            helpermocks.PasswordHasher
+	PasswordCriteriaValidatorMock helpermocks.PasswordCriteriaValidator
 	UserController                controllers.UserController
 }
 
@@ -38,8 +37,8 @@ func (suite *UserControllerTestSuite) SetupTest() {
 	}
 
 	suite.UserCRUDMock = databasemocks.UserCRUD{}
-	suite.PasswordHasherMock = mocks.PasswordHasher{}
-	suite.PasswordCriteriaValidatorMock = modelmocks.PasswordCriteriaValidator{}
+	suite.PasswordHasherMock = helpermocks.PasswordHasher{}
+	suite.PasswordCriteriaValidatorMock = helpermocks.PasswordCriteriaValidator{}
 	suite.UserController = controllers.UserController{
 		UserCRUD:                  &suite.UserCRUDMock,
 		PasswordHasher:            &suite.PasswordHasherMock,
