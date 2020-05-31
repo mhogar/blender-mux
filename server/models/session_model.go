@@ -17,5 +17,5 @@ func CreateNewSession(userID uuid.UUID) *Session {
 }
 
 func (s Session) Validate() ValidateError {
-	return CreateModelValidValidateError()
+	return CreateValidateModelValid()
 }

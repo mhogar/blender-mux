@@ -9,28 +9,27 @@ type Model interface {
 }
 
 // ValidateError is a struct for encapsulating the return value of Model's Validate method.
-//
-// Status is an int that describes the type of error.
-//
-// error is internal error object.
 type ValidateError struct {
+	// Status is an int that describes the type of error.
 	Status int
+
+	// error is the internal error object.
 	error
 }
 
 // A ValidateError status.
 const (
-	ValidateErrorModelValid                = iota
-	ValidateErrorMigrationInvalidID        = iota
-	ValidateErrorMigrationInvalidTimestamp = iota
-	ValidateErrorUserInvalidID             = iota
-	ValidateErrorUserInvalidUsername       = iota
-	ValidateErrorUserInvalidPasswordHash   = iota
+	ValidateModelValid                = iota
+	ValidateMigrationInvalidID        = iota
+	ValidateMigrationInvalidTimestamp = iota
+	ValidateUserInvalidID             = iota
+	ValidateUserInvalidUsername       = iota
+	ValidateUserInvalidPasswordHash   = iota
 )
 
-// CreateModelValidValidateError creates a ValidateError with status ValidateErrorModelValid and no error.
-func CreateModelValidValidateError() ValidateError {
-	return ValidateError{ValidateErrorModelValid, nil}
+// CreateValidateModelValid creates a ValidateError with status ValidateModelValid and no error.
+func CreateValidateModelValid() ValidateError {
+	return ValidateError{ValidateModelValid, nil}
 }
 
 // CreateValidateError creates a ValidateError with the provided status and an error with the provided message.

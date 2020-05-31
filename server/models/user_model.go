@@ -24,16 +24,16 @@ func CreateNewUser(username string, passwordHash []byte) *User {
 // Returns a ValidateError indicating its result.
 func (u User) Validate() ValidateError {
 	if u.ID == uuid.Nil {
-		return CreateValidateError(ValidateErrorUserInvalidID, "id cannot be nil")
+		return CreateValidateError(ValidateUserInvalidID, "id cannot be nil")
 	}
 
 	if u.Username == "" {
-		return CreateValidateError(ValidateErrorUserInvalidUsername, "username cannot be empty")
+		return CreateValidateError(ValidateUserInvalidUsername, "username cannot be empty")
 	}
 
 	if len(u.PasswordHash) == 0 {
-		return CreateValidateError(ValidateErrorUserInvalidPasswordHash, "password hash cannot be nil")
+		return CreateValidateError(ValidateUserInvalidPasswordHash, "password hash cannot be nil")
 	}
 
-	return CreateModelValidValidateError()
+	return CreateValidateModelValid()
 }

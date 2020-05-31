@@ -13,7 +13,7 @@ import (
 func (db *MongoAdapter) CreateMigration(timestamp string) error {
 	//validate timestamp and create the migration to save
 	verr := models.ValidateMigrationTimestamp(timestamp)
-	if verr.Status != models.ValidateErrorModelValid {
+	if verr.Status != models.ValidateModelValid {
 		return common.ChainError("migration timestamp is invalid", verr)
 	}
 	migration := models.CreateNewMigration(timestamp)

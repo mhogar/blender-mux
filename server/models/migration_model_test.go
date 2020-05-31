@@ -38,7 +38,7 @@ func (suite *MigrationTestSuite) TestValidate_WithValidMigration_ReturnsModelVal
 	err := suite.Migration.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorModelValid, err.Status)
+	suite.EqualValues(models.ValidateModelValid, err.Status)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigrationInvalidID() {
@@ -49,7 +49,7 @@ func (suite *MigrationTestSuite) TestValidate_WithNilMigrationID_ReturnsMigratio
 	err := suite.Migration.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorMigrationInvalidID, err.Status)
+	suite.EqualValues(models.ValidateMigrationInvalidID, err.Status)
 }
 
 func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_ReturnsError() {
@@ -62,7 +62,7 @@ func (suite *MigrationTestSuite) TestValidate_WithVariousInvalidTimestamps_Retur
 		err := suite.Migration.Validate()
 
 		//assert
-		suite.EqualValues(models.ValidateErrorMigrationInvalidTimestamp, err.Status)
+		suite.EqualValues(models.ValidateMigrationInvalidTimestamp, err.Status)
 	}
 
 	timestamp = "0001010100000"

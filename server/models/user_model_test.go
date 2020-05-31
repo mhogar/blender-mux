@@ -38,7 +38,7 @@ func (suite *UserTestSuite) TestValidate_WithValidUser_ReturnsModelValid() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorModelValid, err.Status)
+	suite.EqualValues(models.ValidateModelValid, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
@@ -49,7 +49,7 @@ func (suite *UserTestSuite) TestValidate_WithNilUserID_ReturnsUserInvalidID() {
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorUserInvalidID, err.Status)
+	suite.EqualValues(models.ValidateUserInvalidID, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUsername() {
@@ -60,7 +60,7 @@ func (suite *UserTestSuite) TestValidate_WithEmptyUsername_ReturnsUserInvalidUse
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorUserInvalidUsername, err.Status)
+	suite.EqualValues(models.ValidateUserInvalidUsername, err.Status)
 }
 
 func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvalidPasswordHash() {
@@ -71,7 +71,7 @@ func (suite *UserTestSuite) TestValidate_WithEmptyPasswordHash_ReturnsUserInvali
 	err := suite.User.Validate()
 
 	//assert
-	suite.EqualValues(models.ValidateErrorUserInvalidPasswordHash, err.Status)
+	suite.EqualValues(models.ValidateUserInvalidPasswordHash, err.Status)
 }
 
 func TestUserTestSuite(t *testing.T) {
